@@ -98,3 +98,7 @@ export const creditsAPI = {
 };
 
 export default api;
+
+// Direct exports for convenience
+export const discoverUsers = (params = {}) => api.get('/discover', { params });
+export const searchUsers = (params = {}) => api.get('/discover/search', { params });

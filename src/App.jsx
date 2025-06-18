@@ -32,10 +32,10 @@ function App() {
     <AuthProvider>
       <SocketProvider>
         <Router>
-          <div className="min-h-screen bg-gray-50 flex flex-col">
+          <div className="min-h-screen bg-dark-900 text-dark-50 flex flex-col font-mono">
             <Navbar />
 
-            <main className="flex-1">
+            <main className="flex-1 animate-fade-in">
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<HomePage />} />
@@ -100,23 +100,49 @@ function App() {
             <Footer />
           </div>
 
-          {/* Toast notifications */}
+          {/* Toast notifications with enhanced dark theme */}
           <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,
+              className: "font-mono",
               style: {
-                background: "#363636",
-                color: "#fff",
+                background: "#1e293b",
+                color: "#ffffff",
+                border: "1px solid #475569",
+                borderRadius: "0.5rem",
+                fontSize: "0.875rem",
+                fontWeight: "500",
+                fontFamily: "'JetBrains Mono', monospace",
+                boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.4)",
               },
               success: {
                 style: {
-                  background: "#059669",
+                  background: "linear-gradient(135deg, #10b981, #059669)",
+                  color: "#ffffff",
+                  border: "1px solid #059669",
+                },
+                iconTheme: {
+                  primary: "#ffffff",
+                  secondary: "#10b981",
                 },
               },
               error: {
                 style: {
-                  background: "#DC2626",
+                  background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                  color: "#ffffff",
+                  border: "1px solid #dc2626",
+                },
+                iconTheme: {
+                  primary: "#ffffff",
+                  secondary: "#ef4444",
+                },
+              },
+              loading: {
+                style: {
+                  background: "linear-gradient(135deg, #0ea5e9, #0284c7)",
+                  color: "#ffffff",
+                  border: "1px solid #0284c7",
                 },
               },
             }}

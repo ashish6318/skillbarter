@@ -47,10 +47,10 @@ const schemas = {  register: Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().required()
   }),
-  
-  updateProfile: Joi.object({
+    updateProfile: Joi.object({
     firstName: Joi.string().max(50).optional(),
     lastName: Joi.string().max(50).optional(),
+    title: Joi.string().max(100).optional(),
     bio: Joi.string().max(500).optional(),
     country: Joi.string().optional(),
     languages: Joi.array().items(Joi.string()).optional(),

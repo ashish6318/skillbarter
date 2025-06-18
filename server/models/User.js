@@ -23,10 +23,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6
   },
-  
-  // Profile
+    // Profile
   firstName: { type: String, required: true, maxlength: 50 },
   lastName: { type: String, required: true, maxlength: 50 },
+  title: { type: String, maxlength: 100 },
   profilePicture: { type: String, default: '' },
   bio: { type: String, maxlength: 500 },
   

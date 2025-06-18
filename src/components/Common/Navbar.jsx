@@ -38,36 +38,36 @@ const Navbar = () => {
     { name: "Sessions", href: "/sessions", icon: CalendarDaysIcon },
     { name: "Credits", href: "/credits", icon: CreditCardIcon },
   ];
-
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <nav className="bg-dark-800 shadow-lg border-b border-dark-600 backdrop-blur-sm bg-opacity-95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and brand */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SB</span>
+            <Link to="/" className="flex items-center space-x-2 group">
+              <div className="w-8 h-8 bg-gradient-to-br from-accent-400 to-accent-600 rounded-lg flex items-center justify-center shadow-glow transition-transform group-hover:scale-105">
+                <span className="text-white font-mono font-bold text-sm">
+                  &lt;/&gt;
+                </span>
               </div>
-              <span className="text-xl font-bold text-gray-900">
+              <span className="text-xl font-mono font-bold text-dark-50 group-hover:text-accent-400 transition-all">
                 SkillBarter
               </span>
             </Link>
           </div>
-
           {/* Desktop Navigation */}
           {isAuthenticated && (
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center space-x-2">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center px-4 py-2 rounded-lg text-sm font-mono font-medium transition-all duration-200 ${
                       isActiveRoute(item.href)
-                        ? "bg-blue-100 text-blue-700"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                        ? "bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-glow"
+                        : "text-dark-200 hover:text-dark-50 hover:bg-dark-700"
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
@@ -76,60 +76,63 @@ const Navbar = () => {
                 );
               })}
             </div>
-          )}
-
+          )}{" "}
           {/* Right side - User menu */}
           <div className="flex items-center space-x-4">
             {/* Connection status indicator */}
             {isAuthenticated && (
               <div className="flex items-center space-x-2">
                 <div
-                  className={`w-2 h-2 rounded-full ${
-                    isConnected ? "bg-green-500" : "bg-red-500"
+                  className={`w-2 h-2 rounded-full animate-pulse ${
+                    isConnected ? "bg-success-500 shadow-soft" : "bg-error-500"
                   }`}
                   title={isConnected ? "Connected" : "Disconnected"}
                 />
+                <span className="text-xs text-dark-400 font-mono">
+                  {isConnected ? "ONLINE" : "OFFLINE"}
+                </span>
               </div>
             )}
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
-                {/* Credits display */}
-                <div className="hidden sm:flex items-center space-x-1 text-sm text-gray-600">
-                  <CreditCardIcon className="w-4 h-4" />
-                  <span>{user?.credits || 0}</span>
+                {/* Credits display */}{" "}
+                <div className="hidden sm:flex items-center space-x-2 px-3 py-1 bg-dark-700 rounded-lg border border-dark-600">
+                  <CreditCardIcon className="w-4 h-4 text-accent-400" />
+                  <span className="text-sm font-mono font-medium text-dark-100">
+                    {user?.credits || 0}
+                  </span>
                 </div>
-
                 {/* Profile dropdown */}
                 <div className="relative group">
-                  <button className="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                  <button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-dark-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500">
+                    {" "}
                     {user?.profilePicture ? (
                       <img
-                        className="w-8 h-8 rounded-full object-cover"
+                        className="w-8 h-8 rounded-full object-cover ring-2 ring-dark-600"
                         src={user.profilePicture}
-                        alt={user.name}
+                        alt={user.firstName + " " + user.lastName}
                       />
                     ) : (
-                      <UserCircleIcon className="w-8 h-8 text-gray-400" />
-                    )}
-                    <span className="hidden sm:block text-gray-700">
-                      {user?.name}
+                      <UserCircleIcon className="w-8 h-8 text-dark-400" />
+                    )}{" "}
+                    <span className="hidden sm:block text-sm font-mono font-medium text-dark-200">
+                      {user?.firstName} {user?.lastName}
                     </span>
-                  </button>
-
+                  </button>{" "}
                   {/* Dropdown menu */}
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="py-1">
+                  <div className="absolute right-0 mt-2 w-48 bg-dark-800 rounded-xl shadow-medium border border-dark-600 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-glass">
+                    <div className="py-2">
                       <Link
                         to="/profile"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center px-4 py-3 text-sm font-mono text-dark-200 hover:bg-dark-700 hover:text-dark-50 transition-colors"
                       >
                         <UserCircleIcon className="w-4 h-4 mr-3" />
                         Profile
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center w-full px-4 py-3 text-sm font-mono text-dark-200 hover:bg-error-500 hover:text-white transition-colors"
                       >
                         <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
                         Sign out
@@ -139,16 +142,16 @@ const Navbar = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-dark-300 hover:text-dark-50 px-4 py-2 rounded-lg text-sm font-mono font-medium transition-colors"
                 >
                   Sign in
-                </Link>
+                </Link>{" "}
                 <Link
                   to="/register"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-400 hover:to-accent-500 text-white px-6 py-2 rounded-lg text-sm font-mono font-medium transition-all duration-200 shadow-glow hover:scale-105"
                 >
                   Sign up
                 </Link>
@@ -158,7 +161,7 @@ const Navbar = () => {
             {/* Mobile menu button */}
             {isAuthenticated && (
               <button
-                className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-dark-400 hover:text-dark-50 hover:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-accent-500 transition-colors"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 {isMobileMenuOpen ? (
@@ -173,18 +176,18 @@ const Navbar = () => {
 
         {/* Mobile menu */}
         {isAuthenticated && isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
+          <div className="md:hidden animate-slide-up">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-dark-600 bg-dark-800">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`flex items-center px-3 py-2 rounded-md text-base font-medium ${
+                    className={`flex items-center px-4 py-3 rounded-lg text-base font-mono font-medium transition-colors ${
                       isActiveRoute(item.href)
-                        ? "bg-blue-100 text-blue-700"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                        ? "bg-accent-500 text-white"
+                        : "text-dark-300 hover:text-dark-50 hover:bg-dark-700"
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -192,12 +195,11 @@ const Navbar = () => {
                     {item.name}
                   </Link>
                 );
-              })}
-
+              })}{" "}
               {/* Credits display on mobile */}
-              <div className="flex items-center px-3 py-2 text-sm text-gray-600">
-                <CreditCardIcon className="w-5 h-5 mr-3" />
-                <span>Credits: {user?.credits || 0}</span>
+              <div className="flex items-center px-4 py-3 text-sm text-dark-400 bg-dark-700 rounded-lg mx-2 mt-2">
+                <CreditCardIcon className="w-5 h-5 mr-3 text-accent-500" />
+                <span className="font-mono">Credits: {user?.credits || 0}</span>
               </div>
             </div>
           </div>

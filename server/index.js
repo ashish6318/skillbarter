@@ -14,6 +14,7 @@ const { globalLimiter } = require('./middleware/rateLimiting');
 // Import routes
 const authRoutes = require('./routes/auth');
 const discoverRoutes = require('./routes/discover');
+const messagesRoutes = require('./routes/messages');
 
 const app = express();
 const server = http.createServer(app);
@@ -23,6 +24,9 @@ const io = socketIO(server, {
     credentials: true
   }
 });
+
+// Make io available to routes
+app.set('io', io);
 
 const PORT = process.env.PORT || 5000;
 
@@ -71,7 +75,7 @@ app.get('/api/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/discover', discoverRoutes);
-// app.use('/api/messages', messagesRoutes);
+app.use('/api/messages', messagesRoutes);
 // app.use('/api/sessions', sessionsRoutes);
 // app.use('/api/credits', creditsRoutes);
 
@@ -133,6 +137,10 @@ io.on('connection', (socket) => {
     user: socket.user,
     lastSeen: new Date()
   });
+  
+  // Send current online users to the newly connected user
+  const currentOnlineUsers = Array.from(onlineUsers.keys());
+  socket.emit('users:online', currentOnlineUsers);
   
   // Notify others about online status
   socket.broadcast.emit('user:online', {

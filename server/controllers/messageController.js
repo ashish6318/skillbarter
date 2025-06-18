@@ -1,7 +1,6 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
-const { validateMessage } = require('../middleware/validation');
-const { getPaginatedResults } = require('../utils/pagination');
+const { paginateWithOffset } = require('../utils/pagination');
 const { formatError } = require('../utils/helpers');
 
 // Get conversation between two users
@@ -9,9 +8,8 @@ const getConversation = async (req, res) => {
   try {
     const { userId } = req.params;
     const currentUserId = req.user.id;
-    
-    // Validate that the other user exists
-    const otherUser = await User.findById(userId).select('name profilePicture');
+      // Validate that the other user exists
+    const otherUser = await User.findById(userId).select('firstName lastName profilePicture isOnline');
     if (!otherUser) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -24,22 +22,24 @@ const getConversation = async (req, res) => {
         { sender: currentUserId, receiver: userId },
         { sender: userId, receiver: currentUserId }
       ]
-    };
-
-    const result = await getPaginatedResults(
+    };    const result = await paginateWithOffset(
       Message,
       query,
-      { sort: { createdAt: -1 }, populate: 'sender receiver', select: '-__v' },
-      page,
-      limit
-    );
-
-    res.json({
+      { 
+        page, 
+        limit,
+        sortField: 'createdAt',
+        sortOrder: -1,
+        populate: 'sender receiver'
+      }
+    );    res.json({
+      success: true,
       conversation: result.data.reverse(), // Reverse to show oldest first
       pagination: result.pagination,
       otherUser: {
         id: otherUser._id,
-        name: otherUser.name,
+        firstName: otherUser.firstName,
+        lastName: otherUser.lastName,
         profilePicture: otherUser.profilePicture
       }
     });
@@ -52,17 +52,25 @@ const getConversation = async (req, res) => {
 // Get all conversations for current user
 const getConversations = async (req, res) => {
   try {
+    console.log('📋 GET /api/messages/conversations called by user:', req.user?.username || req.user?.id);
     const currentUserId = req.user.id;
+    console.log('📋 Current user ID:', currentUserId, typeof currentUserId);
+    
+    // Convert string ID to ObjectId for MongoDB aggregation
+    const mongoose = require('mongoose');
+    const currentUserObjectId = new mongoose.Types.ObjectId(currentUserId);
+    console.log('📋 Converted to ObjectId:', currentUserObjectId);
+    
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 20;
 
     // Get latest message from each conversation
     const conversations = await Message.aggregate([
       {
         $match: {
           $or: [
-            { sender: currentUserId },
-            { receiver: currentUserId }
+            { sender: currentUserObjectId },
+            { receiver: currentUserObjectId }
           ]
         }
       },
@@ -70,24 +78,22 @@ const getConversations = async (req, res) => {
         $sort: { createdAt: -1 }
       },
       {
-        $group: {
-          _id: {
-            $cond: [
-              { $eq: ['$sender', currentUserId] },
-              '$receiver',
-              '$sender'
-            ]
-          },
+        $group: {        _id: {
+          $cond: [
+            { $eq: ['$sender', currentUserObjectId] },
+            '$receiver',
+            '$sender'
+          ]
+        },
           lastMessage: { $first: '$$ROOT' },
           unreadCount: {
             $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $eq: ['$receiver', currentUserId] },
-                    { $eq: ['$read', false] }
-                  ]
-                },
+              $cond: [              {
+                $and: [
+                  { $eq: ['$receiver', currentUserObjectId] },
+                  { $eq: ['$read', false] }
+                ]
+              },
                 1,
                 0
               ]
@@ -105,19 +111,17 @@ const getConversations = async (req, res) => {
       },
       {
         $unwind: '$otherUser'
-      },
-      {
-        $project: {
+      },      {        $project: {
           otherUser: {
-            id: '$otherUser._id',
-            name: '$otherUser.name',
+            _id: '$otherUser._id',  // Changed from 'id' to '_id' for consistency
+            firstName: '$otherUser.firstName',
+            lastName: '$otherUser.lastName',
             profilePicture: '$otherUser.profilePicture',
             isOnline: '$otherUser.isOnline'
-          },
-          lastMessage: {
+          },          lastMessage: {
             id: '$lastMessage._id',
             content: '$lastMessage.content',
-            type: '$lastMessage.type',
+            messageType: '$lastMessage.messageType',
             createdAt: '$lastMessage.createdAt',
             sender: '$lastMessage.sender'
           },
@@ -133,35 +137,33 @@ const getConversations = async (req, res) => {
       {
         $limit: limit
       }
-    ]);
-
-    const totalConversations = await Message.aggregate([
+    ]);    const totalConversations = await Message.aggregate([
       {
         $match: {
           $or: [
-            { sender: currentUserId },
-            { receiver: currentUserId }
+            { sender: currentUserObjectId },
+            { receiver: currentUserObjectId }
           ]
         }
       },
       {
-        $group: {
-          _id: {
-            $cond: [
-              { $eq: ['$sender', currentUserId] },
-              '$receiver',
-              '$sender'
-            ]
-          }
+        $group: {        _id: {
+          $cond: [
+            { $eq: ['$sender', currentUserObjectId] },
+            '$receiver',
+            '$sender'
+          ]
+        }
         }
       },
       {
         $count: 'total'
       }
-    ]);
-
-    const total = totalConversations[0]?.total || 0;
+    ]);    const total = totalConversations[0]?.total || 0;
     const totalPages = Math.ceil(total / limit);
+
+    console.log('📋 Returning conversations:', conversations.length);
+    console.log('📋 First conversation:', conversations[0]);
 
     res.json({
       conversations,
@@ -182,12 +184,7 @@ const getConversations = async (req, res) => {
 // Send a message
 const sendMessage = async (req, res) => {
   try {
-    const { error } = validateMessage(req.body);
-    if (error) {
-      return res.status(400).json({ error: formatError(error) });
-    }
-
-    const { receiver, content, type = 'text' } = req.body;
+    const { receiver, content, messageType = 'text' } = req.body;
     const sender = req.user.id;
 
     // Validate receiver exists
@@ -201,50 +198,53 @@ const sendMessage = async (req, res) => {
       sender,
       receiver,
       content,
-      type
+      messageType
     });
 
     await message.save();
-    await message.populate('sender receiver', 'name profilePicture');
-
-    // Emit to socket if receiver is online
+    await message.populate('sender receiver', 'firstName lastName profilePicture');    // Emit to socket if receiver is online
     const io = req.app.get('io');
     if (io) {
-      io.to(receiver).emit('newMessage', {
-        id: message._id,
+      const roomId = [sender, receiver].sort().join(':');
+      io.to(`conversation:${roomId}`).emit('message:received', {
+        _id: message._id,
         sender: {
-          id: message.sender._id,
-          name: message.sender.name,
+          _id: message.sender._id,
+          firstName: message.sender.firstName,
+          lastName: message.sender.lastName,
           profilePicture: message.sender.profilePicture
         },
         receiver: {
-          id: message.receiver._id,
-          name: message.receiver.name,
+          _id: message.receiver._id,
+          firstName: message.receiver.firstName,
+          lastName: message.receiver.lastName,
           profilePicture: message.receiver.profilePicture
         },
         content: message.content,
-        type: message.type,
-        read: message.read,
+        messageType: message.messageType,
+        isRead: message.isRead,
         createdAt: message.createdAt
       });
-    }
-
-    res.status(201).json({
+      
+      console.log(`Message emitted to conversation room: conversation:${roomId}`);
+    }    res.status(201).json({
       message: {
-        id: message._id,
+        _id: message._id,
         sender: {
-          id: message.sender._id,
-          name: message.sender.name,
+          _id: message.sender._id,
+          firstName: message.sender.firstName,
+          lastName: message.sender.lastName,
           profilePicture: message.sender.profilePicture
         },
         receiver: {
-          id: message.receiver._id,
-          name: message.receiver.name,
+          _id: message.receiver._id,
+          firstName: message.receiver.firstName,
+          lastName: message.receiver.lastName,
           profilePicture: message.receiver.profilePicture
         },
         content: message.content,
-        type: message.type,
-        read: message.read,
+        messageType: message.messageType,
+        isRead: message.isRead,
         createdAt: message.createdAt
       }
     });

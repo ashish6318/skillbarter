@@ -105,41 +105,39 @@ const DashboardPage = () => {
       color: "bg-yellow-500",
     },
   ];
-
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
         <LoadingSpinner size="large" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-dark-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-mono font-bold text-dark-50 mb-2">
             Welcome back, {user?.name?.split(" ")[0]}! 👋
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-dark-200 font-mono">
             Here's what's happening with your skill exchange journey.
           </p>
-        </div>
-
+        </div>{" "}
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-card rounded-xl p-6 hover:bg-elevated transition-colors">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <CalendarDaysIcon className="h-8 w-8 text-blue-600" />
+                <CalendarDaysIcon className="h-8 w-8 text-accent-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-mono font-medium text-dark-300 truncate">
                     Upcoming Sessions
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dd className="text-lg font-mono font-medium text-dark-50">
                     {stats.sessions.upcoming}
                   </dd>
                 </dl>
@@ -147,17 +145,17 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-card rounded-xl p-6 hover:bg-elevated transition-colors">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <AcademicCapIcon className="h-8 w-8 text-green-600" />
+                <AcademicCapIcon className="h-8 w-8 text-green-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-mono font-medium text-dark-300 truncate">
                     Sessions Completed
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dd className="text-lg font-mono font-medium text-dark-50">
                     {stats.sessions.completed}
                   </dd>
                 </dl>
@@ -165,17 +163,17 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-card rounded-xl p-6 hover:bg-elevated transition-colors">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ChatBubbleLeftRightIcon className="h-8 w-8 text-purple-600" />
+                <ChatBubbleLeftRightIcon className="h-8 w-8 text-purple-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-mono font-medium text-dark-300 truncate">
                     Unread Messages
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dd className="text-lg font-mono font-medium text-dark-50">
                     {stats.messages.unread}
                   </dd>
                 </dl>
@@ -183,17 +181,17 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-card rounded-xl p-6 hover:bg-elevated transition-colors">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <CreditCardIcon className="h-8 w-8 text-yellow-600" />
+                <CreditCardIcon className="h-8 w-8 text-yellow-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
+                  <dt className="text-sm font-mono font-medium text-dark-300 truncate">
                     Credit Balance
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
+                  <dd className="text-lg font-mono font-medium text-dark-50">
                     {stats.credits.balance}
                   </dd>
                 </dl>
@@ -201,7 +199,6 @@ const DashboardPage = () => {
             </div>
           </div>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Quick Actions */}
           <div className="lg:col-span-2">
