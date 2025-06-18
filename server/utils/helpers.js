@@ -151,10 +151,54 @@ const generateUsernameSuggestions = (baseUsername) => {
   return suggestions;
 };
 
+// Process credits (add or deduct) for user
+const processCredits = async (userId, amount, type, description, sessionId = null) => {
+  const User = require('../models/User');
+  
+  try {
+    // Update user balance
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Check if user has enough credits for deduction
+    if (amount < 0 && user.credits < Math.abs(amount)) {
+      throw new Error('Insufficient credits');
+    }
+
+    const newBalance = user.credits + amount;
+    
+    // Update user balance
+    user.credits = newBalance;
+    await user.save();
+
+    // Create transaction record
+    const transaction = new CreditTransaction({
+      user: userId,
+      type,
+      amount,
+      balanceAfter: newBalance,
+      description,
+      category: 'session',
+      relatedSession: sessionId,
+      metadata: { sessionId }
+    });
+
+    await transaction.save();
+    
+    return { success: true, newBalance };
+  } catch (error) {
+    console.error('Error processing credits:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   generateToken,
   generateRoomId,
   createCreditTransaction,
+  processCredits,
   formatError,
   formatSuccess,
   isValidObjectId,

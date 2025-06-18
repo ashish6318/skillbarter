@@ -15,7 +15,7 @@ router.use(protect);
 router.get('/balance', creditController.getCreditBalance);
 
 // Get credit transaction history
-router.get('/history', creditController.getCreditHistory);
+router.get('/transactions', creditController.getCreditHistory);
 
 // Get credit statistics
 router.get('/stats', creditController.getCreditStats);

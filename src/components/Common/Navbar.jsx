@@ -14,6 +14,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import NotificationCenter from "../Notifications/NotificationCenter";
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -38,6 +39,7 @@ const Navbar = () => {
     { name: "Sessions", href: "/sessions", icon: CalendarDaysIcon },
     { name: "Credits", href: "/credits", icon: CreditCardIcon },
   ];
+
   return (
     <nav className="bg-dark-800 shadow-lg border-b border-dark-600 backdrop-blur-sm bg-opacity-95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,6 +57,7 @@ const Navbar = () => {
               </span>
             </Link>
           </div>
+
           {/* Desktop Navigation */}
           {isAuthenticated && (
             <div className="hidden md:flex items-center space-x-2">
@@ -76,7 +79,8 @@ const Navbar = () => {
                 );
               })}
             </div>
-          )}{" "}
+          )}
+
           {/* Right side - User menu */}
           <div className="flex items-center space-x-4">
             {/* Connection status indicator */}
@@ -96,17 +100,20 @@ const Navbar = () => {
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
-                {/* Credits display */}{" "}
+                {/* Credits display */}
                 <div className="hidden sm:flex items-center space-x-2 px-3 py-1 bg-dark-700 rounded-lg border border-dark-600">
                   <CreditCardIcon className="w-4 h-4 text-accent-400" />
                   <span className="text-sm font-mono font-medium text-dark-100">
                     {user?.credits || 0}
                   </span>
                 </div>
+
+                {/* Notification Center */}
+                <NotificationCenter />
+
                 {/* Profile dropdown */}
                 <div className="relative group">
                   <button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-dark-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500">
-                    {" "}
                     {user?.profilePicture ? (
                       <img
                         className="w-8 h-8 rounded-full object-cover ring-2 ring-dark-600"
@@ -115,11 +122,12 @@ const Navbar = () => {
                       />
                     ) : (
                       <UserCircleIcon className="w-8 h-8 text-dark-400" />
-                    )}{" "}
+                    )}
                     <span className="hidden sm:block text-sm font-mono font-medium text-dark-200">
                       {user?.firstName} {user?.lastName}
                     </span>
-                  </button>{" "}
+                  </button>
+
                   {/* Dropdown menu */}
                   <div className="absolute right-0 mt-2 w-48 bg-dark-800 rounded-xl shadow-medium border border-dark-600 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-glass">
                     <div className="py-2">
@@ -148,7 +156,7 @@ const Navbar = () => {
                   className="text-dark-300 hover:text-dark-50 px-4 py-2 rounded-lg text-sm font-mono font-medium transition-colors"
                 >
                   Sign in
-                </Link>{" "}
+                </Link>
                 <Link
                   to="/register"
                   className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-400 hover:to-accent-500 text-white px-6 py-2 rounded-lg text-sm font-mono font-medium transition-all duration-200 shadow-glow hover:scale-105"
@@ -195,7 +203,8 @@ const Navbar = () => {
                     {item.name}
                   </Link>
                 );
-              })}{" "}
+              })}
+
               {/* Credits display on mobile */}
               <div className="flex items-center px-4 py-3 text-sm text-dark-400 bg-dark-700 rounded-lg mx-2 mt-2">
                 <CreditCardIcon className="w-5 h-5 mr-3 text-accent-500" />

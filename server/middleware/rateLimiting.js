@@ -91,7 +91,7 @@ const sessionLimiter = rateLimit({
 // Session rate limiter
 const sessionRateLimit = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 20, // Max 20 session operations per 5 minutes
+  max: 500, // Max 500 session operations per 5 minutes (very high for development)
   message: {
     error: 'Session rate limit exceeded',
     retryAfter: '5 minutes'
@@ -100,11 +100,18 @@ const sessionRateLimit = rateLimit({
 
 // Credit rate limiter - more restrictive for financial operations
 const creditRateLimit = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 10, // Max 10 credit operations per 10 minutes
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 50, // Max 50 credit operations per 5 minutes (more reasonable for analytics)
   message: {
     error: 'Credit operation rate limit exceeded',
-    retryAfter: '10 minutes'
+    retryAfter: '5 minutes'
+  },
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      message: 'Credit operation rate limit exceeded. Please try again later.',
+      retryAfter: Math.round(req.rateLimit.resetTime)
+    });
   }
 });
 
@@ -145,14 +152,7 @@ module.exports = {
   messageLimiter,
   discoverLimiter,
   sessionLimiter,
-  sessionRateLimit: sessionLimiter, // Use sessionLimiter as sessionRateLimit
-  creditRateLimit: rateLimit({
-    windowMs: 10 * 60 * 1000, // 10 minutes
-    max: 10, // Max 10 credit operations per 10 minutes
-    message: {
-      error: 'Credit operation rate limit exceeded',
-      retryAfter: '10 minutes'
-    }
-  }),
+  sessionRateLimit, // Use the correct sessionRateLimit (500 per 5 min)
+  creditRateLimit, // Use the previously defined creditRateLimit
   userBasedLimiter
 };

@@ -16,34 +16,41 @@ const sessionSchema = new mongoose.Schema({
   skill: { type: String, required: true },
   category: String,
   description: String,
-  
-  // Scheduling
-  scheduledTime: { type: Date, required: true },
+    // Scheduling
+  scheduledFor: { type: Date, required: true },
   duration: { type: Number, required: true }, // planned duration in minutes
   actualDuration: { type: Number, default: 0 }, // actual time spent
-  
-  // Session Status
+    // Session Status
   status: { 
     type: String, 
     enum: [
-      'scheduled',    // Confirmed and waiting
+      'pending',      // Waiting for teacher approval
+      'confirmed',    // Confirmed and waiting to start
       'in_progress',  // Currently happening
       'completed',    // Successfully finished
       'cancelled',    // Cancelled before start
       'no_show',      // Student didn't show up
       'abandoned'     // Started but not completed
     ],
-    default: 'scheduled' 
+    default: 'pending' 
   },
   
   // Video Call Details
   roomId: { type: String, unique: true },
   roomPassword: String,
   meetingUrl: String,
-  
-  // Timing
+    // Timing
   startedAt: Date,
   endedAt: Date,
+  completedAt: Date,
+  
+  // Cancellation/Rescheduling
+  cancelledAt: Date,
+  cancelledBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  cancellationReason: String,
+  rescheduledAt: Date,
+  rescheduledBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  rescheduleReason: String,
   
   // Credit Management
   creditsExchanged: { type: Number, default: 0 },
@@ -78,15 +85,15 @@ const sessionSchema = new mongoose.Schema({
 // Indexes for performance
 sessionSchema.index({ teacher: 1, status: 1 });
 sessionSchema.index({ student: 1, status: 1 });
-sessionSchema.index({ scheduledTime: 1 });
-sessionSchema.index({ status: 1, scheduledTime: 1 });
+sessionSchema.index({ scheduledFor: 1 });
+sessionSchema.index({ status: 1, scheduledFor: 1 });
 sessionSchema.index({ roomId: 1 });
 
 // Compound indexes
 sessionSchema.index({ 
   teacher: 1, 
   student: 1, 
-  scheduledTime: 1 
+  scheduledFor: 1 
 });
 
 // Generate unique room ID before saving

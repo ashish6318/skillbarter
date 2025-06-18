@@ -1,6 +1,5 @@
 const CreditTransaction = require('../models/CreditTransaction');
 const User = require('../models/User');
-const { createPaginationResponse } = require('../utils/pagination');
 const { 
   CREDIT_TRANSACTION_TYPES,
   CREDIT_TRANSACTION_STATUS 
@@ -36,41 +35,36 @@ const getCreditBalance = async (req, res) => {
 // Get credit transaction history
 const getCreditHistory = async (req, res) => {
   try {
-    const { page = 1, limit = 20, type, status } = req.query;
+    const { page = 1, limit = 20, type } = req.query;
     
-    const filter = {
-      $or: [
-        { fromUser: req.user.id },
-        { toUser: req.user.id }
-      ]
-    };
+    const filter = { user: req.user.id };
 
-    if (type && Object.values(CREDIT_TRANSACTION_TYPES).includes(type)) {
+    if (type) {
       filter.type = type;
     }
 
-    if (status && Object.values(CREDIT_TRANSACTION_STATUS).includes(status)) {
-      filter.status = status;
-    }
-
-    const options = {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      sort: { createdAt: -1 },
-      populate: [
-        { path: 'fromUser', select: 'name profilePicture' },
-        { path: 'toUser', select: 'name profilePicture' },
-        { path: 'session', select: 'title startTime' }
-      ]
-    };
-
-    const result = await CreditTransaction.paginate(filter, options);
+    const skip = (parseInt(page) - 1) * parseInt(limit);
     
-    const response = createPaginationResponse(result, req);
+    const transactions = await CreditTransaction.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate('relatedSession', 'skill duration')
+      .populate('relatedUser', 'firstName lastName');
+
+    const total = await CreditTransaction.countDocuments(filter);
 
     res.json({
       success: true,
-      data: response
+      data: {
+        transactions,
+        pagination: {
+          total,
+          pages: Math.ceil(total / parseInt(limit)),
+          page: parseInt(page),
+          limit: parseInt(limit)
+        }
+      }
     });
   } catch (error) {
     console.error('Get credit history error:', error);

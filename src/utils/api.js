@@ -81,13 +81,15 @@ export const messagesAPI = {
 // Sessions API calls
 export const sessionsAPI = {
   getSessions: (params = {}) => api.get('/sessions', { params }),
-  createSession: (sessionData) => api.post('/sessions/create', sessionData),
+  createSession: (sessionData) => api.post('/sessions', sessionData),
   updateSession: (sessionId, updates) => api.put(`/sessions/${sessionId}`, updates),
   cancelSession: (sessionId) => api.delete(`/sessions/${sessionId}`),
+  rescheduleSession: (sessionId, data) => api.put(`/sessions/${sessionId}/reschedule`, data),
   startSession: (sessionId) => api.post(`/sessions/${sessionId}/start`),
-  endSession: (sessionId) => api.post(`/sessions/${sessionId}/end`),
+  endSession: (sessionId, data) => api.post(`/sessions/${sessionId}/end`, data),
   submitReview: (sessionId, reviewData) => api.post(`/sessions/${sessionId}/review`, reviewData),
   getRoomDetails: (sessionId) => api.get(`/sessions/${sessionId}/room`),
+  getAvailableSlots: (teacherId, params = {}) => api.get(`/sessions/user/${teacherId}/slots`, { params }),
 };
 
 // Credits API calls
@@ -95,6 +97,8 @@ export const creditsAPI = {
   getBalance: () => api.get('/credits/balance'),
   getTransactions: (params = {}) => api.get('/credits/transactions', { params }),
   getStats: () => api.get('/credits/stats'),
+  purchaseCredits: (data) => api.post('/credits/purchase', data),
+  transferCredits: (data) => api.post('/credits/transfer', data),
 };
 
 export default api;

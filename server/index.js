@@ -11,10 +11,16 @@ const path = require('path');
 // Import middleware
 const { globalLimiter } = require('./middleware/rateLimiting');
 
+// Import services
+const ReminderService = require('./services/reminderService');
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const discoverRoutes = require('./routes/discover');
 const messagesRoutes = require('./routes/messages');
+const sessionsRoutes = require('./routes/sessions');
+const reminderRoutes = require('./routes/reminders');
+const creditsRoutes = require('./routes/credits');
 
 const app = express();
 const server = http.createServer(app);
@@ -27,6 +33,9 @@ const io = socketIO(server, {
 
 // Make io available to routes
 app.set('io', io);
+
+// Initialize reminder service
+let reminderService;
 
 const PORT = process.env.PORT || 5000;
 
@@ -76,8 +85,9 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/discover', discoverRoutes);
 app.use('/api/messages', messagesRoutes);
-// app.use('/api/sessions', sessionsRoutes);
-// app.use('/api/credits', creditsRoutes);
+app.use('/api/sessions', sessionsRoutes);
+app.use('/api/reminders', reminderRoutes);
+app.use('/api/credits', creditsRoutes);
 
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
@@ -238,6 +248,11 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/skillbart
 })
 .then(() => {
   console.log('✅ Connected to MongoDB');
+  
+  // Initialize reminder service after database connection
+  reminderService = new ReminderService(io);
+  app.set('reminderService', reminderService);
+  console.log('📅 Reminder service initialized');
 })
 .catch((error) => {
   console.error('❌ MongoDB connection error:', error);

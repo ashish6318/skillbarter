@@ -1,10 +1,9 @@
 const Session = require('../models/Session');
 const User = require('../models/User');
 const CreditTransaction = require('../models/CreditTransaction');
-const { validateSession, validateSessionUpdate } = require('../middleware/validation');
-const { getPaginatedResults, getCursorPaginatedResults } = require('../utils/pagination');
-const { formatError, processCredits } = require('../utils/helpers');
-const { addHours, isBefore, isAfter, parseISO } = require('date-fns');
+const { paginateWithOffset, paginateWithCursor } = require('../utils/pagination');
+const { processCredits } = require('../utils/helpers');
+const { addHours, isBefore, parseISO } = require('date-fns');
 
 // Get user's sessions (as teacher or student)
 const getSessions = async (req, res) => {
@@ -29,30 +28,35 @@ const getSessions = async (req, res) => {
     // Filter by status
     if (status && ['pending', 'confirmed', 'completed', 'cancelled'].includes(status)) {
       query.status = status;
-    }
-
-    const populate = [
-      { path: 'teacher', select: 'name profilePicture skills rating' },
+    }    const populate = [
+      { path: 'teacher', select: 'name profilePicture skillsOffered rating' },
       { path: 'student', select: 'name profilePicture' }
     ];
 
     let result;
     if (cursor) {
-      result = await getCursorPaginatedResults(
+      result = await paginateWithCursor(
         Session,
         query,
-        { sort: { createdAt: -1 }, populate },
-        cursor,
-        parseInt(limit)
-      );
-    } else {
+        { 
+          limit: parseInt(limit),
+          cursor,
+          sortField: 'createdAt',
+          sortOrder: -1,
+          populate: populate
+        }
+      );    } else {
       const page = parseInt(req.query.page) || 1;
-      result = await getPaginatedResults(
-        Session,
+      
+      result = await paginateWithOffset(Session,
         query,
-        { sort: { createdAt: -1 }, populate },
-        page,
-        parseInt(limit)
+        { 
+          page,
+          limit: parseInt(limit),
+          sortField: 'createdAt',
+          sortOrder: -1,
+          populate: populate
+        }
       );
     }
 
@@ -70,10 +74,8 @@ const getSessions = async (req, res) => {
 const getSession = async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const currentUserId = req.user.id;
-
-    const session = await Session.findById(sessionId)
-      .populate('teacher', 'name profilePicture skills rating')
+    const currentUserId = req.user.id;    const session = await Session.findById(sessionId)
+      .populate('teacher', 'name profilePicture skillsOffered rating')
       .populate('student', 'name profilePicture');
 
     if (!session) {
@@ -95,27 +97,39 @@ const getSession = async (req, res) => {
 // Create a session request
 const createSession = async (req, res) => {
   try {
-    const { error } = validateSession(req.body);
-    if (error) {
-      return res.status(400).json({ error: formatError(error) });
-    }
-
+    console.log('Creating session with data:', req.body);
+    
     const { teacher, skill, scheduledFor, duration, message } = req.body;
     const student = req.user.id;
+
+    console.log('Session data:', { teacher, skill, scheduledFor, duration, message, student });
 
     // Validate teacher exists and has the skill
     const teacherUser = await User.findById(teacher);
     if (!teacherUser) {
+      console.log('Teacher not found:', teacher);
       return res.status(404).json({ error: 'Teacher not found' });
     }
 
-    if (!teacherUser.skills.includes(skill)) {
+    console.log('Teacher found:', { 
+      id: teacherUser._id, 
+      name: teacherUser.name, 
+      skillsOffered: teacherUser.skillsOffered,
+      allFields: Object.keys(teacherUser.toObject ? teacherUser.toObject() : teacherUser)
+    });
+
+    if (!teacherUser.skillsOffered || !Array.isArray(teacherUser.skillsOffered) || 
+        !teacherUser.skillsOffered.some(skillObj => skillObj.skill === skill)) {
+      console.log('Skill not found:', { skill, teacherSkills: teacherUser.skillsOffered });
       return res.status(400).json({ error: 'Teacher does not offer this skill' });
     }
 
     // Check if scheduled time is in the future
     const scheduledDate = parseISO(scheduledFor);
+    console.log('Scheduled date check:', { scheduledFor, scheduledDate, now: new Date() });
+    
     if (isBefore(scheduledDate, new Date())) {
+      console.log('Scheduled time is in the past');
       return res.status(400).json({ error: 'Session must be scheduled for a future time' });
     }
 
@@ -123,7 +137,10 @@ const createSession = async (req, res) => {
     const studentUser = await User.findById(student);
     const requiredCredits = Math.ceil(duration / 60); // 1 credit per hour
     
+    console.log('Credit check:', { requiredCredits, availableCredits: studentUser.credits });
+    
     if (studentUser.credits < requiredCredits) {
+      console.log('Insufficient credits');
       return res.status(400).json({ 
         error: `Insufficient credits. Required: ${requiredCredits}, Available: ${studentUser.credits}` 
       });
@@ -140,8 +157,7 @@ const createSession = async (req, res) => {
       status: 'pending'
     });
 
-    await session.save();
-    await session.populate('teacher', 'name profilePicture skills rating');
+    await session.save();    await session.populate('teacher', 'name profilePicture skillsOffered rating');
     await session.populate('student', 'name profilePicture');
 
     // Emit notification to teacher
@@ -171,16 +187,11 @@ const createSession = async (req, res) => {
 // Update session status (accept/reject/cancel)
 const updateSessionStatus = async (req, res) => {
   try {
-    const { error } = validateSessionUpdate(req.body);
-    if (error) {
-      return res.status(400).json({ error: formatError(error) });
-    }
-
-    const { sessionId } = req.params;
+    const { id } = req.params;
     const { status, reason } = req.body;
     const currentUserId = req.user.id;
 
-    const session = await Session.findById(sessionId)
+    const session = await Session.findById(id)
       .populate('teacher', 'name profilePicture')
       .populate('student', 'name profilePicture');
 
@@ -258,8 +269,14 @@ const getAvailableSlots = async (req, res) => {
     const { teacherId } = req.params;
     const { date, duration = 60 } = req.query;
 
+    console.log('Available slots request:', { teacherId, date, duration });
+
     if (!date) {
       return res.status(400).json({ error: 'Date parameter is required' });
+    }
+
+    if (!teacherId || teacherId === 'undefined') {
+      return res.status(400).json({ error: 'Valid teacher ID is required' });
     }
 
     const teacher = await User.findById(teacherId);
@@ -267,25 +284,34 @@ const getAvailableSlots = async (req, res) => {
       return res.status(404).json({ error: 'Teacher not found' });
     }
 
-    const selectedDate = parseISO(date);
+    const selectedDate = new Date(date + 'T12:00:00.000Z'); // Use noon UTC to avoid timezone issues
     const startOfDay = new Date(selectedDate);
-    startOfDay.setHours(9, 0, 0, 0); // 9 AM
+    startOfDay.setUTCHours(9, 0, 0, 0); // 9 AM UTC
     const endOfDay = new Date(selectedDate);
-    endOfDay.setHours(21, 0, 0, 0); // 9 PM
+    endOfDay.setUTCHours(21, 0, 0, 0); // 9 PM UTC
+
+    console.log('Date range:', { selectedDate, startOfDay, endOfDay });
+    console.log('Current time:', new Date());
 
     // Get existing sessions for the day
     const existingSessions = await Session.find({
       teacher: teacherId,
       scheduledFor: {
         $gte: startOfDay,
-        $lt: addHours(endOfDay, 24)
+        $lt: new Date(endOfDay.getTime() + 24 * 60 * 60 * 1000) // next day
       },
       status: { $in: ['pending', 'confirmed'] }
-    });
+    });    console.log('Existing sessions:', existingSessions.length);
 
     // Generate available slots (every 30 minutes from 9 AM to 9 PM)
     const slots = [];
+    
     let currentSlot = new Date(startOfDay);
+    const now = new Date();
+
+    console.log('Starting slot generation from:', currentSlot.toISOString());
+    console.log('Until:', endOfDay.toISOString());
+    console.log('Current time:', now.toISOString());
 
     while (currentSlot < endOfDay) {
       const slotEnd = addHours(currentSlot, duration / 60);
@@ -298,7 +324,14 @@ const getAvailableSlots = async (req, res) => {
         return (currentSlot < sessionEnd && slotEnd > sessionStart);
       });
 
-      if (!hasConflict && isAfter(currentSlot, new Date())) {
+      // Only include future slots (at least 30 minutes from now to allow booking time)
+      const isInFuture = currentSlot.getTime() > (now.getTime() + 30 * 60 * 1000);
+
+      if (slots.length < 5) { // Only log first 5 slots to avoid spam
+        console.log(`Slot ${currentSlot.toISOString()}: conflict=${hasConflict}, future=${isInFuture}`);
+      }
+
+      if (!hasConflict && isInFuture) {
         slots.push({
           start: currentSlot.toISOString(),
           end: slotEnd.toISOString(),
@@ -306,9 +339,11 @@ const getAvailableSlots = async (req, res) => {
         });
       }
 
-      currentSlot = addHours(currentSlot, 0.5); // 30-minute intervals
+      // Move to next slot (30-minute intervals)
+      currentSlot = new Date(currentSlot.getTime() + 30 * 60 * 1000);
     }
 
+    console.log('Generated slots:', slots.length);
     res.json({ slots });
   } catch (error) {
     console.error('Error fetching available slots:', error);
@@ -376,39 +411,423 @@ const rateSession = async (req, res) => {
   }
 };
 
+// Start session (generate room)
+const startSession = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user.id;
+
+    const session = await Session.findById(id)
+      .populate('teacher', 'name profilePicture')
+      .populate('student', 'name profilePicture');
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Check if user is part of this session
+    if (session.teacher._id.toString() !== currentUserId && session.student._id.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (session.status !== 'confirmed') {
+      return res.status(400).json({ error: 'Session must be confirmed to start' });
+    }
+
+    // Check if it's time to start (within 15 minutes of scheduled time)
+    const now = new Date();
+    const scheduledTime = new Date(session.scheduledFor);
+    const timeDiff = Math.abs(now - scheduledTime) / (1000 * 60); // difference in minutes
+
+    if (timeDiff > 15 && now < scheduledTime) {
+      return res.status(400).json({ error: 'Session can only be started within 15 minutes of scheduled time' });
+    }
+
+    // Generate room details if not already generated
+    if (!session.roomId) {
+      const roomId = `session_${session._id}_${Date.now()}`;
+      const roomPassword = Math.random().toString(36).substring(2, 15);
+      const meetingUrl = `${process.env.FRONTEND_URL}/session/${session._id}/room`;
+
+      session.roomId = roomId;
+      session.roomPassword = roomPassword;
+      session.meetingUrl = meetingUrl;
+    }
+
+    // Update session status and start time
+    session.status = 'in_progress';
+    session.startedAt = new Date();
+    await session.save();
+
+    // Emit real-time event
+    const io = req.app.get('io');
+    if (io) {
+      const participantId = currentUserId === session.teacher._id.toString() 
+        ? session.student._id.toString() 
+        : session.teacher._id.toString();
+      
+      io.to(participantId).emit('session:started', {
+        sessionId: session._id,
+        roomId: session.roomId,
+        meetingUrl: session.meetingUrl,
+        startedBy: currentUserId === session.teacher._id.toString() ? 'teacher' : 'student'
+      });
+    }
+
+    res.json({
+      success: true,
+      session: {
+        id: session._id,
+        status: session.status,
+        roomId: session.roomId,
+        meetingUrl: session.meetingUrl,
+        startedAt: session.startedAt
+      }
+    });
+  } catch (error) {
+    console.error('Error starting session:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// End session and process credits
+const endSession = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { actualDuration, teacherNotes, studentNotes, sessionSummary } = req.body;
+    const currentUserId = req.user.id;
+
+    const session = await Session.findById(id)
+      .populate('teacher', 'name profilePicture')
+      .populate('student', 'name profilePicture');
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Check if user is part of this session
+    if (session.teacher._id.toString() !== currentUserId && session.student._id.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (session.status !== 'in_progress') {
+      return res.status(400).json({ error: 'Session must be in progress to end' });
+    }
+
+    // Update session details
+    session.status = 'completed';
+    session.endedAt = new Date();
+    session.actualDuration = actualDuration || session.duration;
+    
+    if (teacherNotes) session.teacherNotes = teacherNotes;
+    if (studentNotes) session.studentNotes = studentNotes;
+    if (sessionSummary) session.sessionSummary = sessionSummary;
+
+    await session.save();
+
+    // Process credits - award to teacher based on actual duration
+    const earnedCredits = Math.ceil(session.actualDuration / 60);
+    await processCredits(
+      session.teacher._id, 
+      earnedCredits, 
+      'session_completion', 
+      `Session teaching: ${session.skill}`,
+      session._id
+    );
+
+    // Emit real-time event
+    const io = req.app.get('io');
+    if (io) {
+      const participantId = currentUserId === session.teacher._id.toString() 
+        ? session.student._id.toString() 
+        : session.teacher._id.toString();
+      
+      io.to(participantId).emit('session:ended', {
+        sessionId: session._id,
+        endedBy: currentUserId === session.teacher._id.toString() ? 'teacher' : 'student',
+        actualDuration: session.actualDuration
+      });
+    }
+
+    res.json({
+      success: true,
+      session: {
+        id: session._id,
+        status: session.status,
+        endedAt: session.endedAt,
+        actualDuration: session.actualDuration,
+        creditsEarned: earnedCredits
+      }
+    });
+  } catch (error) {
+    console.error('Error ending session:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Submit session review (separate from rating)
+const reviewSession = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, feedback, wouldRecommend } = req.body;
+    const currentUserId = req.user.id;
+
+    const session = await Session.findById(id)
+      .populate('teacher', 'name rating totalRatings')
+      .populate('student', 'name');
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    if (session.status !== 'completed') {
+      return res.status(400).json({ error: 'Can only review completed sessions' });
+    }
+
+    if (session.student._id.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'Only student can review the session' });
+    }
+
+    if (session.review && session.review.rating) {
+      return res.status(400).json({ error: 'Session already reviewed' });
+    }
+
+    // Validate rating
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    }
+
+    // Update session with review
+    session.review = {
+      rating,
+      feedback,
+      wouldRecommend: wouldRecommend || false,
+      reviewedAt: new Date()
+    };
+
+    await session.save();
+
+    // Update teacher's overall rating
+    const teacher = session.teacher;
+    const newTotalRatings = teacher.totalRatings + 1;
+    const newRating = ((teacher.rating * teacher.totalRatings) + rating) / newTotalRatings;
+
+    await User.findByIdAndUpdate(teacher._id, {
+      rating: Math.round(newRating * 10) / 10,
+      totalRatings: newTotalRatings
+    });
+
+    res.json({
+      success: true,
+      review: session.review,
+      teacherNewRating: Math.round(newRating * 10) / 10
+    });
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Get video room details
+const getRoomDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user.id;
+
+    const session = await Session.findById(id)
+      .populate('teacher', 'name profilePicture')
+      .populate('student', 'name profilePicture');
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Check if user is part of this session
+    if (session.teacher._id.toString() !== currentUserId && session.student._id.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (!session.roomId) {
+      return res.status(400).json({ error: 'Session room not yet created' });
+    }
+
+    res.json({
+      success: true,
+      room: {
+        roomId: session.roomId,
+        roomPassword: session.roomPassword,
+        meetingUrl: session.meetingUrl,
+        status: session.status,
+        participants: {
+          teacher: {
+            id: session.teacher._id,
+            name: session.teacher.name,
+            profilePicture: session.teacher.profilePicture
+          },
+          student: {
+            id: session.student._id,
+            name: session.student.name,
+            profilePicture: session.student.profilePicture
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching room details:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Reschedule session
+const rescheduleSession = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newScheduledFor, reason } = req.body;
+    const currentUserId = req.user.id;
+
+    const session = await Session.findById(id)
+      .populate('teacher', 'name profilePicture')
+      .populate('student', 'name profilePicture');
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Check if user is part of this session
+    if (session.teacher._id.toString() !== currentUserId && session.student._id.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Can only reschedule confirmed sessions
+    if (session.status !== 'confirmed') {
+      return res.status(400).json({ error: 'Only confirmed sessions can be rescheduled' });
+    }
+
+    // Check if new time is in the future
+    const newTime = new Date(newScheduledFor);
+    if (newTime <= new Date()) {
+      return res.status(400).json({ error: 'New schedule time must be in the future' });
+    }
+
+    // Store original time for notification
+    const originalTime = session.scheduledFor;
+
+    // Update session
+    session.scheduledFor = newTime;
+    session.rescheduledAt = new Date();
+    session.rescheduledBy = currentUserId;
+    if (reason) session.rescheduleReason = reason;
+
+    await session.save();
+
+    // Emit notifications
+    const io = req.app.get('io');
+    if (io) {
+      const notificationData = {
+        sessionId: session._id,
+        skill: session.skill,
+        originalTime,
+        newTime: newTime,
+        reason,
+        rescheduledBy: currentUserId === session.teacher._id.toString() ? 'teacher' : 'student'
+      };
+
+      const recipientId = currentUserId === session.teacher._id.toString() 
+        ? session.student._id.toString() 
+        : session.teacher._id.toString();
+
+      io.to(recipientId).emit('session:rescheduled', notificationData);
+    }
+
+    res.json({
+      success: true,
+      session: {
+        id: session._id,
+        scheduledFor: session.scheduledFor,
+        rescheduledAt: session.rescheduledAt,
+        rescheduledBy: session.rescheduledBy,
+        rescheduleReason: session.rescheduleReason
+      }
+    });
+  } catch (error) {
+    console.error('Error rescheduling session:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Cancel session (DELETE request)
+const cancelSession = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user.id;
+
+    const session = await Session.findById(id)
+      .populate('teacher', 'name profilePicture')
+      .populate('student', 'name profilePicture');
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Check if user is part of this session
+    if (session.teacher._id.toString() !== currentUserId && session.student._id.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Can only cancel pending or confirmed sessions
+    if (!['pending', 'confirmed'].includes(session.status)) {
+      return res.status(400).json({ error: 'Cannot cancel session in current status' });
+    }
+
+    // Refund credits if session was confirmed
+    if (session.status === 'confirmed') {
+      const requiredCredits = Math.ceil(session.duration / 60);
+      await processCredits(session.student._id, requiredCredits, 'session_cancellation', `Session cancellation refund: ${session.skill}`, session._id);
+    }
+
+    // Update session status
+    session.status = 'cancelled';
+    session.cancelledAt = new Date();
+    session.cancelledBy = currentUserId;
+    await session.save();
+
+    // Emit notifications
+    const io = req.app.get('io');
+    if (io) {
+      const recipientId = currentUserId === session.teacher._id.toString() 
+        ? session.student._id.toString() 
+        : session.teacher._id.toString();
+
+      io.to(recipientId).emit('session:cancelled', {
+        sessionId: session._id,
+        skill: session.skill,
+        scheduledFor: session.scheduledFor,
+        cancelledBy: currentUserId === session.teacher._id.toString() ? 'teacher' : 'student'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Session cancelled successfully'
+    });
+  } catch (error) {
+    console.error('Error cancelling session:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   getSessions,
-  getUserSessions: getSessions, // Alias for backward compatibility
   getSession,
   createSession,
-  updateSession: updateSessionStatus, // Alias for consistency
-  deleteSession: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const currentUserId = req.user.id;
-
-      const session = await Session.findById(id);
-      if (!session) {
-        return res.status(404).json({ success: false, message: 'Session not found' });
-      }
-
-      // Only allow deletion by participants and only if not completed
-      if (session.teacher.toString() !== currentUserId && session.student.toString() !== currentUserId) {
-        return res.status(403).json({ success: false, message: 'Access denied' });
-      }
-
-      if (session.status === 'completed') {
-        return res.status(400).json({ success: false, message: 'Cannot delete completed sessions' });
-      }
-
-      await Session.findByIdAndDelete(id);
-      res.json({ success: true, message: 'Session deleted successfully' });
-    } catch (error) {
-      console.error('Error deleting session:', error);
-      res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-  },
   updateSessionStatus,
+  cancelSession,
+  startSession,
+  endSession,
+  reviewSession,
+  rateSession: reviewSession, // Alias for backward compatibility
   getAvailableSlots,
-  rateSession
+  getRoomDetails,
+  rescheduleSession,
+  updateSession: updateSessionStatus, // Alias for consistency
 };

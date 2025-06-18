@@ -23,6 +23,11 @@ import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
 import SessionsPage from "./pages/SessionsPage";
 import CreditsPage from "./pages/CreditsPage";
+import ReminderTestPage from "./pages/ReminderTestPage";
+
+import SessionDashboard from "./components/Sessions/SessionDashboard";
+import VideoCall from "./components/Sessions/VideoCall";
+import SessionReminderManager from "./components/Notifications/SessionReminderManager";
 
 // Protected Route component
 import ProtectedRoute from "./components/Common/ProtectedRoute";
@@ -84,10 +89,34 @@ function App() {
                   }
                 />
                 <Route
+                  path="/sessions/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <SessionDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/session/:sessionId/room"
+                  element={
+                    <ProtectedRoute>
+                      <VideoCall />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/credits"
                   element={
                     <ProtectedRoute>
                       <CreditsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/test/reminders"
+                  element={
+                    <ProtectedRoute>
+                      <ReminderTestPage />
                     </ProtectedRoute>
                   }
                 />
@@ -147,6 +176,9 @@ function App() {
               },
             }}
           />
+
+          {/* Session Reminder Manager */}
+          <SessionReminderManager />
         </Router>
       </SocketProvider>
     </AuthProvider>

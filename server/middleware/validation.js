@@ -2,9 +2,11 @@ const Joi = require('joi');
 
 const validate = (schema) => {
   return (req, res, next) => {
+    console.log('Validating request body:', req.body);
     const { error } = schema.validate(req.body);
     
     if (error) {
+      console.log('Validation failed:', error.details);
       return res.status(400).json({
         success: false,
         message: 'Validation error',
@@ -15,6 +17,7 @@ const validate = (schema) => {
       });
     }
     
+    console.log('Validation passed');
     next();
   };
 };
@@ -126,17 +129,16 @@ const schemas = {  register: Joi.object({
   rating: Joi.object({
     rating: Joi.number().min(1).max(5).required(),
     review: Joi.string().max(500).optional()
+  }),  session: Joi.object({
+    teacher: Joi.string().hex().length(24).required(),
+    skill: Joi.string().required(),
+    scheduledFor: Joi.string().isoDate().required(),
+    duration: Joi.number().min(15).max(240).required(),
+    message: Joi.string().max(500).allow('').optional()
   }),
-
-  session: Joi.object({
-    teacherUserId: Joi.string().required(),
-    title: Joi.string().min(3).max(100).required(),
-    description: Joi.string().max(500).optional(),
-    category: Joi.string().required(),
-    skillsOffered: Joi.array().items(Joi.string()).min(1).required(),
-    startTime: Joi.date().min('now').required(),
-    duration: Joi.number().min(15).max(480).required(), // 15 minutes to 8 hours
-    creditsRequired: Joi.number().min(1).required()
+  sessionUpdate: Joi.object({
+    status: Joi.string().valid('pending', 'confirmed', 'cancelled', 'in_progress', 'completed').required(),
+    reason: Joi.string().max(500).allow(null).optional()
   })
 };
 
@@ -151,6 +153,7 @@ const validateCreditPurchase = validate(schemas.creditPurchase);
 const validateCreditTransfer = validate(schemas.creditTransfer);
 const validateRating = validate(schemas.rating);
 const validateSession = validate(schemas.session);
+const validateSessionUpdate = validate(schemas.sessionUpdate);
 
 module.exports = { 
   validate, 
@@ -164,5 +167,6 @@ module.exports = {
   validateCreditPurchase,
   validateCreditTransfer,
   validateRating,
-  validateSession
+  validateSession,
+  validateSessionUpdate
 };

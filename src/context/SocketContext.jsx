@@ -85,7 +85,6 @@ export const SocketProvider = ({ children }) => {
         console.log("👤 User came online:", userId);
         setOnlineUsers((prev) => new Set([...prev, userId]));
       });
-
       newSocket.on("user:offline", ({ userId }) => {
         console.log("👤 User went offline:", userId);
         setOnlineUsers((prev) => {
@@ -93,6 +92,15 @@ export const SocketProvider = ({ children }) => {
           updated.delete(userId);
           return updated;
         });
+      });
+
+      // Session reminder events
+      newSocket.on("session:reminder", (reminderData) => {
+        console.log("⏰ Session reminder received:", reminderData);
+        // Call global reminder handler if available
+        if (window.addSessionReminder) {
+          window.addSessionReminder(reminderData);
+        }
       });
 
       setSocket(newSocket);
@@ -173,10 +181,11 @@ export const SocketProvider = ({ children }) => {
       socket.emit("typing:stop", receiverId);
     }
   };
-
   // Debug online users changes
   useEffect(() => {
-    console.log("👥 Online users updated:", Array.from(onlineUsers));
+    if (import.meta.env.DEV) {
+      console.log("👥 Online users updated:", Array.from(onlineUsers));
+    }
   }, [onlineUsers]);
 
   const value = {

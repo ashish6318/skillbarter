@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   XMarkIcon,
   MapPinIcon,
   StarIcon,
   ClockIcon,
   ChatBubbleLeftIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
+import ScheduleSession from "../Sessions/ScheduleSession";
 
 const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState("");
   if (!isOpen || !user) return null;
 
   const getInitials = (firstName, lastName) => {
@@ -86,7 +90,6 @@ const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
               </div>
             )}
           </div>
-
           {/* Bio */}
           {user.bio && (
             <div className="mb-6">
@@ -97,8 +100,7 @@ const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
                 {user.bio}
               </p>
             </div>
-          )}
-
+          )}{" "}
           {/* Skills Offered */}
           {user.skillsOffered?.length > 0 && (
             <div className="mb-6">
@@ -115,9 +117,20 @@ const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
                       <h5 className="font-mono font-medium text-accent-400">
                         {skill.skill}
                       </h5>
-                      <span className="px-2 py-1 bg-accent-500 bg-opacity-20 text-accent-400 rounded-md text-xs font-mono">
-                        {skill.experience || "Intermediate"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-1 bg-accent-500 bg-opacity-20 text-accent-400 rounded-md text-xs font-mono">
+                          {skill.experience || "Intermediate"}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setSelectedSkill(skill.skill);
+                            setShowScheduleModal(true);
+                          }}
+                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-mono transition-colors"
+                        >
+                          Book Session
+                        </button>
+                      </div>
                     </div>
                     {skill.category && (
                       <p className="text-dark-400 font-mono text-xs mb-2">
@@ -134,7 +147,6 @@ const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
               </div>
             </div>
           )}
-
           {/* Languages */}
           {user.languages?.length > 0 && (
             <div className="mb-6">
@@ -169,9 +181,26 @@ const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
           >
             <ChatBubbleLeftIcon className="w-4 h-4" />
             Send Message
-          </button>
+          </button>{" "}
         </div>
       </div>
+
+      {/* Schedule Session Modal */}
+      {showScheduleModal && (
+        <ScheduleSession
+          teacher={user}
+          skill={selectedSkill}
+          onClose={() => {
+            setShowScheduleModal(false);
+            setSelectedSkill("");
+          }}
+          onSuccess={() => {
+            setShowScheduleModal(false);
+            setSelectedSkill("");
+            onClose(); // Close the user detail modal too
+          }}
+        />
+      )}
     </div>
   );
 };
