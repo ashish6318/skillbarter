@@ -6,6 +6,7 @@ import SearchFilter from "../components/Discover/SearchFilter";
 import UserDetailModal from "../components/Discover/UserDetailModal";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
 import { discoverUsers } from "../utils/api";
+import { themeClasses, componentPatterns, cn } from "../utils/theme";
 
 const DiscoverPage = () => {
   const navigate = useNavigate();
@@ -109,47 +110,146 @@ const DiscoverPage = () => {
     // Navigate to messages page with user data
     navigate("/messages", { state: { selectedUser: user } });
   };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+      <div
+        className={cn(
+          "min-h-screen flex items-center justify-center",
+          themeClasses.bgSecondary
+        )}
+      >
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-mono font-bold text-dark-50 mb-2">
-            Discover Skills
-          </h1>
-          <p className="text-lg text-dark-300 font-mono">
-            Find amazing people to learn from and share knowledge with
-          </p>
+    <div className={cn("min-h-screen", themeClasses.bgPrimary)}>
+      {/* Hero Header Section */}
+      <div
+        className={cn(
+          "backdrop-blur-sm border-b",
+          themeClasses.bgPrimary,
+          themeClasses.borderSecondary
+        )}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <h1
+              className={cn(
+                "text-5xl font-bold mb-6 font-heading leading-tight",
+                "bg-gradient-to-r from-text-primary via-accent-primary to-accent-hover bg-clip-text text-transparent"
+              )}
+            >
+              Discover Amazing Skills
+            </h1>
+            <p
+              className={cn(
+                "text-xl max-w-3xl mx-auto leading-relaxed",
+                themeClasses.textSecondary
+              )}
+            >
+              Connect with incredible people worldwide to learn from and share
+              knowledge with.
+              <span className={cn("font-medium", themeClasses.textAccent)}>
+                {" "}
+                Your next learning adventure starts here.
+              </span>
+            </p>
+            <div className="mt-8 flex justify-center">
+              <div
+                className={cn(
+                  "flex items-center space-x-8 text-sm",
+                  themeClasses.textMuted
+                )}
+              >
+                <div className="flex items-center">
+                  <div
+                    className={cn(
+                      "w-2 h-2 rounded-full mr-2",
+                      themeClasses.successBg
+                    )}
+                  ></div>
+                  <span>Active Community</span>
+                </div>
+                <div className="flex items-center">
+                  <div
+                    className={cn(
+                      "w-2 h-2 rounded-full mr-2",
+                      "bg-accent-primary"
+                    )}
+                  ></div>
+                  <span>Expert Teachers</span>
+                </div>
+                <div className="flex items-center">
+                  <div
+                    className={cn(
+                      "w-2 h-2 rounded-full mr-2",
+                      "bg-accent-muted"
+                    )}
+                  ></div>
+                  <span>Flexible Learning</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <SearchFilter
           onSearch={handleSearch}
           onFilterChange={handleFilterChange}
           loading={searchLoading}
-        />
-
+        />{" "}
         {users.length === 0 && !searchLoading ? (
-          <div className="text-center py-12">
-            <div className="bg-card rounded-lg p-8 border border-dark-600">
-              <h3 className="text-lg font-mono font-medium text-dark-200 mb-2">
+          <div className="text-center py-20">
+            <div
+              className={cn(
+                "p-12 rounded-2xl border max-w-md mx-auto transition-all duration-300",
+                componentPatterns.card,
+                "hover:shadow-[var(--shadow-xl)]"
+              )}
+            >
+              <div
+                className={cn(
+                  "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6",
+                  themeClasses.bgTertiary,
+                  themeClasses.shadowSm
+                )}
+              >
+                <svg
+                  className={cn("w-10 h-10", themeClasses.textMuted)}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <h3
+                className={cn(
+                  "text-xl font-semibold mb-3",
+                  themeClasses.textPrimary
+                )}
+              >
                 No users found
               </h3>
-              <p className="text-dark-400 font-mono">
-                Try adjusting your search or filters
+              <p className={cn("leading-relaxed", themeClasses.textSecondary)}>
+                Try adjusting your search terms or filters to discover more
+                amazing people in our community
               </p>
             </div>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               {users.map((user) => (
                 <UserCard
                   key={user._id}
@@ -158,20 +258,38 @@ const DiscoverPage = () => {
                 />
               ))}
             </div>
-
             {searchLoading && (
-              <div className="flex justify-center py-8">
+              <div className="flex justify-center py-12">
                 <LoadingSpinner />
               </div>
-            )}
-
+            )}{" "}
             {pagination.hasMore && !searchLoading && (
               <div className="text-center">
                 <button
                   onClick={handleLoadMore}
-                  className="px-6 py-3 bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors font-mono"
+                  className={cn(
+                    "inline-flex items-center px-8 py-4 rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-1 hover:scale-105",
+                    themeClasses.gradientAccent,
+                    themeClasses.gradientHover,
+                    themeClasses.textInverse,
+                    themeClasses.shadowLg,
+                    "hover:shadow-[var(--shadow-xl)]"
+                  )}
                 >
                   Load More Users
+                  <svg
+                    className="ml-2 w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-200"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
               </div>
             )}

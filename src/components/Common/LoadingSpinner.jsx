@@ -1,4 +1,5 @@
 import React from "react";
+import { themeClasses, cn } from "../../utils/theme";
 
 const LoadingSpinner = ({ size = "medium", className = "" }) => {
   const sizeClasses = {
@@ -8,9 +9,13 @@ const LoadingSpinner = ({ size = "medium", className = "" }) => {
   };
 
   return (
-    <div className={`flex items-center justify-center ${className}`}>
+    <div className={cn("flex items-center justify-center", className)}>
       <div
-        className={`animate-spin rounded-full border-2 border-dark-600 border-t-accent-400 ${sizeClasses[size]}`}
+        className={cn(
+          "animate-spin rounded-full border-2",
+          "border-border-primary border-t-accent-primary",
+          sizeClasses[size]
+        )}
       ></div>
     </div>
   );

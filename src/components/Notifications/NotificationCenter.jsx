@@ -7,6 +7,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { formatDistanceToNow } from "date-fns";
 import NotificationService from "../../services/NotificationService";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  buttonVariants,
+} from "../../utils/theme";
 
 const NotificationCenter = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -83,17 +89,27 @@ const NotificationCenter = () => {
     };
     return icons[type] || "📢";
   };
-
   return (
     <div className="relative">
       {/* Notification Bell */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full"
+        className={cn(
+          "relative p-2 rounded-full transition-colors",
+          themeClasses.textMuted,
+          themeClasses.hover,
+          themeClasses.focus
+        )}
       >
         <BellIcon className="h-6 w-6" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+          <span
+            className={cn(
+              "absolute -top-1 -right-1 inline-flex items-center justify-center",
+              "px-2 py-1 text-xs font-bold leading-none text-white",
+              "transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full"
+            )}
+          >
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -101,15 +117,31 @@ const NotificationCenter = () => {
 
       {/* Notification Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden">
+        <div
+          className={cn(
+            componentPatterns.modal,
+            "absolute right-0 mt-2 w-80 z-50 max-h-96 overflow-hidden"
+          )}
+        >
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">
+          <div
+            className={cn(
+              "px-4 py-3 border-b flex items-center justify-between",
+              themeClasses.borderSecondary
+            )}
+          >
+            <h3
+              className={cn("text-lg font-semibold", themeClasses.textPrimary)}
+            >
               Notifications
             </h3>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className={cn(
+                "transition-colors",
+                themeClasses.textMuted,
+                themeClasses.hover
+              )}
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
@@ -117,17 +149,30 @@ const NotificationCenter = () => {
 
           {/* Actions */}
           {notifications.length > 0 && (
-            <div className="px-4 py-2 border-b border-gray-200 flex justify-between text-sm">
+            <div
+              className={cn(
+                "px-4 py-2 border-b flex justify-between text-sm",
+                themeClasses.borderSecondary
+              )}
+            >
+              {" "}
               <button
                 onClick={markAllAsRead}
-                className="text-indigo-600 hover:text-indigo-800 flex items-center"
+                className={cn(
+                  "flex items-center transition-colors",
+                  themeClasses.textAccent,
+                  "hover:text-accent-hover"
+                )}
               >
                 <CheckIcon className="h-4 w-4 mr-1" />
                 Mark all read
               </button>
               <button
                 onClick={clearAll}
-                className="text-red-600 hover:text-red-800 flex items-center"
+                className={cn(
+                  "flex items-center transition-colors",
+                  "text-red-600 hover:text-red-700"
+                )}
               >
                 <TrashIcon className="h-4 w-4 mr-1" />
                 Clear all
@@ -138,18 +183,25 @@ const NotificationCenter = () => {
           {/* Notifications List */}
           <div className="max-h-64 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center text-gray-500">
-                <BellIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+              <div
+                className={cn("px-4 py-8 text-center", themeClasses.textMuted)}
+              >
+                <BellIcon
+                  className={cn("h-8 w-8 mx-auto mb-2", themeClasses.textMuted)}
+                />
                 <p>No notifications</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200">
+              <div className={cn("divide-y", themeClasses.borderSecondary)}>
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                      !notification.read ? "bg-blue-50" : ""
-                    }`}
+                    className={cn(
+                      "px-4 py-3 cursor-pointer transition-colors",
+                      themeClasses.hover,
+                      !notification.read &&
+                        cn(themeClasses.bgTertiary, "opacity-90")
+                    )}
                     onClick={() => markAsRead(notification.id)}
                   >
                     <div className="flex items-start space-x-3">
@@ -159,20 +211,37 @@ const NotificationCenter = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <p
-                            className={`text-sm font-medium text-gray-900 ${
-                              !notification.read ? "font-semibold" : ""
-                            }`}
+                            className={cn(
+                              "text-sm",
+                              themeClasses.textPrimary,
+                              !notification.read
+                                ? "font-semibold"
+                                : "font-medium"
+                            )}
                           >
                             {notification.title}
-                          </p>
+                          </p>{" "}
                           {!notification.read && (
-                            <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
+                            <div
+                              className={cn(
+                                "w-2 h-2 rounded-full flex-shrink-0",
+                                themeClasses.textAccent,
+                                "bg-current"
+                              )}
+                            ></div>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p
+                          className={cn(
+                            "text-sm mt-1",
+                            themeClasses.textSecondary
+                          )}
+                        >
                           {notification.message}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p
+                          className={cn("text-xs mt-1", themeClasses.textMuted)}
+                        >
                           {formatDistanceToNow(
                             new Date(notification.timestamp),
                             { addSuffix: true }

@@ -4,6 +4,12 @@ import {
   ChatBubbleLeftIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../../context/AuthContext";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  buttonVariants,
+} from "../../utils/theme";
 
 const ChatWindow = ({
   selectedUser,
@@ -65,16 +71,27 @@ const ChatWindow = ({
       console.log("🔍 Is user online:", onlineUsers.has(selectedUser._id));
     }
   }, [selectedUser, onlineUsers]);
-
   if (!selectedUser) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-dark-900">
+      <div
+        className={cn(
+          "flex-1 flex items-center justify-center",
+          themeClasses.bgPrimary
+        )}
+      >
         <div className="text-center">
-          <ChatBubbleLeftIcon className="w-16 h-16 text-dark-400 mx-auto mb-4" />
-          <h3 className="text-lg font-mono font-medium text-dark-300 mb-2">
+          <ChatBubbleLeftIcon
+            className={cn("w-16 h-16 mx-auto mb-4", themeClasses.textMuted)}
+          />
+          <h3
+            className={cn(
+              "text-lg font-medium mb-2",
+              themeClasses.textSecondary
+            )}
+          >
             Select a conversation
           </h3>
-          <p className="text-dark-500 font-mono text-sm">
+          <p className={cn("text-sm", themeClasses.textMuted)}>
             Choose a conversation from the sidebar to start messaging
           </p>
         </div>
@@ -83,11 +100,22 @@ const ChatWindow = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-dark-900">
+    <div className={cn("flex-1 flex flex-col", themeClasses.bgPrimary)}>
       {/* Chat Header */}
-      <div className="bg-card border-b border-dark-600 p-4">
+      <div
+        className={cn(
+          "border-b p-4",
+          themeClasses.bgSecondary,
+          themeClasses.borderSecondary
+        )}
+      >
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-dark-700 flex items-center justify-center mr-3">
+          <div
+            className={cn(
+              "w-10 h-10 rounded-full overflow-hidden flex items-center justify-center mr-3",
+              themeClasses.bgTertiary
+            )}
+          >
             {selectedUser.profilePicture ? (
               <img
                 src={selectedUser.profilePicture}
@@ -95,7 +123,9 @@ const ChatWindow = ({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-sm font-mono font-bold text-dark-300">
+              <span
+                className={cn("text-sm font-bold", themeClasses.textSecondary)}
+              >
                 {getInitials(selectedUser.firstName, selectedUser.lastName)}
               </span>
             )}
@@ -151,18 +181,21 @@ const ChatWindow = ({
                   isCurrentUser ? "justify-end" : "justify-start"
                 }`}
               >
+                {" "}
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                  className={cn(
+                    "max-w-xs lg:max-w-md px-4 py-2 rounded-lg",
                     isCurrentUser
-                      ? "bg-accent-500 text-white"
-                      : "bg-dark-700 text-dark-100"
-                  }`}
+                      ? cn("bg-accent-primary", themeClasses.textInverse)
+                      : cn(themeClasses.bgSecondary, themeClasses.textPrimary)
+                  )}
                 >
-                  <p className="font-mono text-sm">{message.content}</p>
+                  <p className="font-mono text-sm">{message.content}</p>{" "}
                   <p
-                    className={`font-mono text-xs mt-1 ${
-                      isCurrentUser ? "text-accent-100" : "text-dark-400"
-                    }`}
+                    className={cn(
+                      "font-mono text-xs mt-1",
+                      isCurrentUser ? "opacity-80" : themeClasses.textMuted
+                    )}
                   >
                     {formatTime(message.createdAt)}
                   </p>
@@ -177,18 +210,19 @@ const ChatWindow = ({
       {/* Message Input */}
       <div className="bg-card border-t border-dark-600 p-4">
         <form onSubmit={handleSubmit} className="flex gap-3">
+          {" "}
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg font-mono text-sm text-dark-50 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+            className={cn(componentPatterns.input, "flex-1")}
             disabled={sending}
           />
           <button
             type="submit"
             disabled={!newMessage.trim() || sending}
-            className="px-4 py-2 bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+            className={cn(buttonVariants.primary, themeClasses.disabled)}
           >
             <PaperAirplaneIcon className="w-5 h-5" />
           </button>

@@ -6,6 +6,7 @@ import ConversationsList from "../components/Messages/ConversationsList";
 import ChatWindow from "../components/Messages/ChatWindow";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
 import toast from "react-hot-toast";
+import { themeClasses, cn } from "../utils/theme";
 
 const MessagesPage = () => {
   const location = useLocation();
@@ -269,17 +270,20 @@ const MessagesPage = () => {
       setLastSelectedUserId(null); // Reset tracking state
     };
   }, [leaveConversation]); // Only depend on leaveConversation
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+      <div
+        className={cn(
+          "min-h-screen flex items-center justify-center",
+          themeClasses.bgPrimary
+        )}
+      >
         <LoadingSpinner />
       </div>
     );
   }
   return (
-    <div className="min-h-screen bg-dark-900 flex">
-      {" "}
+    <div className={cn("min-h-screen flex", themeClasses.bgPrimary)}>
       {/* Conversations List */}
       <ConversationsList
         conversations={conversations}
@@ -287,7 +291,7 @@ const MessagesPage = () => {
         onSelectUser={handleSelectUser}
         loading={loading}
         onlineUsers={onlineUsers}
-      />{" "}
+      />
       {/* Chat Window */}
       <ChatWindow
         selectedUser={selectedUser}

@@ -5,6 +5,12 @@ import { useSocket } from "../context/SocketContext";
 import SessionsList from "../components/Sessions/SessionsList";
 import SessionCard from "../components/Sessions/SessionCard";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  statusClasses,
+} from "../utils/theme";
 
 const SessionsPage = () => {
   const { user } = useAuth();
@@ -137,45 +143,59 @@ const SessionsPage = () => {
   };
 
   const counts = getSessionCounts();
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div
+        className={cn(
+          "min-h-screen flex items-center justify-center",
+          themeClasses.bgPrimary
+        )}
+      >
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={cn("min-h-screen", themeClasses.bgPrimary)}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Sessions</h1>
-          <p className="text-lg text-gray-600 mt-2">
+          <h1 className={cn("text-3xl font-bold", themeClasses.textPrimary)}>
+            My Sessions
+          </h1>
+          <p className={cn("text-lg mt-2", themeClasses.textSecondary)}>
             Manage your learning and teaching sessions
           </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-700">{error}</p>
+          <div className={cn("mb-6 rounded-lg p-4", statusClasses.errorLight)}>
+            <p className={themeClasses.error}>{error}</p>
           </div>
         )}
 
         {/* Filters */}
-        <div className="mb-6 bg-white rounded-lg shadow p-6">
+        <div
+          className={cn("mb-6 rounded-lg shadow p-6", componentPatterns.card)}
+        >
           <div className="flex flex-wrap gap-4">
+            {" "}
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                className={cn(
+                  "block text-sm font-medium mb-2",
+                  themeClasses.textPrimary
+                )}
+              >
                 Status
               </label>
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={cn(componentPatterns.input)}
               >
                 <option value="all">All ({counts.all})</option>
                 <option value="pending">Pending ({counts.pending})</option>
@@ -189,17 +209,21 @@ const SessionsPage = () => {
                   Completed ({counts.completed})
                 </option>
               </select>
-            </div>
-
+            </div>{" "}
             {/* Role Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                className={cn(
+                  "block text-sm font-medium mb-2",
+                  themeClasses.textPrimary
+                )}
+              >
                 Role
               </label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={cn(componentPatterns.input)}
               >
                 <option value="all">All</option>
                 <option value="teacher">As Teacher</option>
@@ -211,8 +235,13 @@ const SessionsPage = () => {
 
         {/* Sessions List */}
         {filteredSessions.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-500 text-lg">
+          <div
+            className={cn(
+              "rounded-lg shadow p-8 text-center",
+              componentPatterns.card
+            )}
+          >
+            <p className={cn("text-lg", themeClasses.textMuted)}>
               {filter === "all"
                 ? "No sessions found. Start by booking a session with someone!"
                 : `No ${filter} sessions found.`}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple Jitsi Servers Test</title>
+    <script src="https://meet.jit.si/external_api.js"></script>
+</head>
+<body>
+    <h3>Testing Different Jitsi Servers</h3>
+    <div id="buttons">
+        <button onclick="testServer('meet.jit.si')">Test meet.jit.si</button>
+        <button onclick="testServer('8x8.vc')">Test 8x8.vc</button>
+        <button onclick="testServer('meet.ffmuc.net')">Test meet.ffmuc.net</button>
+        <button onclick="testServer('jitsi.riot.im')">Test jitsi.riot.im</button>
+    </div>
+    
+    <div id="status"></div>
+    <div id="jitsi-container" style="width: 100%; height: 600px; margin-top: 20px;"></div>
+    
+    <script>
+        let currentApi = null;
+        
+        function testServer(domain) {
+            const status = document.getElementById('status');
+            status.innerHTML = `Testing ${domain}...`;
+            
+            // Clean up previous instance
+            if (currentApi) {
+                currentApi.dispose();
+            }
+            
+            const container = document.getElementById('jitsi-container');
+            container.innerHTML = '';
+            
+            const options = {
+                roomName: "TestRoom123",
+                width: "100%",
+                height: "600px",
+                parentNode: container,
+                userInfo: {
+                    displayName: "Test User",
+                    email: "test@example.com"
+                },
+                configOverwrite: {
+                    prejoinPageEnabled: false,
+                    requireDisplayName: false,
+                    startWithAudioMuted: true,
+                    startWithVideoMuted: true,
+                    enableLobby: false,
+                    enableAutomaticLobby: false,
+                }
+            };
+
+            console.log(`Testing ${domain} with options:`, options);
+            
+            try {
+                currentApi = new JitsiMeetExternalAPI(domain, options);
+                
+                currentApi.addEventListener('videoConferenceJoined', () => {
+                    status.innerHTML = `✅ SUCCESS: ${domain} - Joined conference!`;
+                    status.style.color = 'green';
+                });
+                
+                currentApi.addEventListener('videoConferenceLeft', () => {
+                    status.innerHTML = `❌ Left conference: ${domain}`;
+                });
+                
+                currentApi.addEventListener('readyToClose', () => {
+                    status.innerHTML = `❌ FAILED: ${domain} - Ready to close (probably rejected)`;
+                    status.style.color = 'red';
+                });
+                
+                // Timeout check
+                setTimeout(() => {
+                    if (status.innerHTML.includes('Testing')) {
+                        status.innerHTML = `⏱️ TIMEOUT: ${domain} - Taking too long`;
+                        status.style.color = 'orange';
+                    }
+                }, 10000);
+                
+            } catch (error) {
+                status.innerHTML = `❌ ERROR: ${domain} - ${error.message}`;
+                status.style.color = 'red';
+                console.error(`Error with ${domain}:`, error);
+            }
+        }
+        
+        // Auto-test the first server
+        setTimeout(() => testServer('8x8.vc'), 1000);
+    </script>
+</body>
+</html>

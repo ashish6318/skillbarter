@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import NotificationService from "../../services/NotificationService";
+import { themeClasses, cn, buttonVariants } from "../../utils/theme";
 
 const SessionReminder = ({ reminder, onDismiss, onJoinSession }) => {
   const [timeLeft, setTimeLeft] = useState("");
@@ -50,17 +51,16 @@ const SessionReminder = ({ reminder, onDismiss, onJoinSession }) => {
         return <ClockIcon className="w-5 h-5 text-gray-500" />;
     }
   };
-
   const getReminderColor = () => {
     switch (reminder.timeUntil) {
       case "in 15 minutes":
-        return "border-red-200 bg-red-50";
+        return "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20";
       case "in 1 hour":
-        return "border-orange-200 bg-orange-50";
+        return "border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20";
       case "in 24 hours":
-        return "border-blue-200 bg-blue-50";
+        return "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20";
       default:
-        return "border-gray-200 bg-gray-50";
+        return cn(themeClasses.borderSecondary, themeClasses.bgTertiary);
     }
   };
 
@@ -70,33 +70,49 @@ const SessionReminder = ({ reminder, onDismiss, onJoinSession }) => {
     }
     onDismiss();
   };
-
   return (
     <div
-      className={`fixed top-4 right-4 max-w-sm w-full border rounded-lg shadow-lg p-4 z-50 ${getReminderColor()}`}
+      className={cn(
+        "fixed top-4 right-4 max-w-sm w-full border rounded-lg shadow-lg p-4 z-50",
+        getReminderColor()
+      )}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-3 flex-1">
           {getReminderIcon()}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-gray-900">
+              <h4
+                className={cn(
+                  "text-sm font-semibold",
+                  themeClasses.textPrimary
+                )}
+              >
                 Session Reminder
               </h4>
               <button
                 onClick={onDismiss}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className={cn(
+                  "transition-colors",
+                  themeClasses.textMuted,
+                  themeClasses.hover
+                )}
               >
                 <XMarkIcon className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-sm text-gray-700 mt-1">
+            <p className={cn("text-sm mt-1", themeClasses.textSecondary)}>
               <span className="font-medium">{reminder.skill}</span> session{" "}
               {reminder.timeUntil}
             </p>
 
-            <div className="flex items-center space-x-4 mt-2 text-xs text-gray-600">
+            <div
+              className={cn(
+                "flex items-center space-x-4 mt-2 text-xs",
+                themeClasses.textMuted
+              )}
+            >
               <span className="flex items-center">
                 <CalendarIcon className="w-3 h-3 mr-1" />
                 {format(new Date(reminder.scheduledFor), "MMM d, h:mm a")}

@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { sessionsAPI } from "../../utils/api";
 import { format, addDays, startOfDay } from "date-fns";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  buttonVariants,
+} from "../../utils/theme";
 
 const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -106,34 +112,53 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
 
     return dates;
   };
-
   const formatTimeSlot = (slot) => {
     const start = new Date(slot.start);
     const end = new Date(slot.end);
     return `${format(start, "h:mm a")} - ${format(end, "h:mm a")}`;
   };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div
+      className={cn(
+        "fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50",
+        "bg-black/50"
+      )}
+    >
+      <div
+        className={cn(
+          componentPatterns.modal,
+          "max-w-md w-full max-h-[90vh] overflow-y-auto"
+        )}
+      >
         <div className="p-6">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-900">
+            <h3
+              className={cn("text-xl font-semibold", themeClasses.textPrimary)}
+            >
               Schedule Session
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 text-xl"
+              className={cn(
+                "text-xl transition-colors",
+                themeClasses.textMuted,
+                themeClasses.hover
+              )}
             >
               ×
             </button>
           </div>
 
           {/* Teacher Info */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className={cn("rounded-lg p-4 mb-6", themeClasses.bgTertiary)}>
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+              <div
+                className={cn(
+                  "w-12 h-12 rounded-full flex items-center justify-center",
+                  themeClasses.bgSecondary
+                )}
+              >
                 {teacher.profilePicture ? (
                   <img
                     src={teacher.profilePicture}
@@ -141,22 +166,34 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
                     className="w-12 h-12 rounded-full object-cover"
                   />
                 ) : (
-                  <span className="text-lg font-medium text-gray-600">
+                  <span
+                    className={cn(
+                      "text-lg font-medium",
+                      themeClasses.textSecondary
+                    )}
+                  >
                     {teacher.name?.charAt(0) || "T"}
                   </span>
                 )}
               </div>
               <div>
-                <p className="font-medium text-gray-900">
+                <p className={cn("font-medium", themeClasses.textPrimary)}>
                   {teacher.name || "Teacher"}
                 </p>
-                <p className="text-sm text-gray-600">{skill}</p>
+                <p className={cn("text-sm", themeClasses.textSecondary)}>
+                  {skill}
+                </p>
                 {teacher.rating && (
-                  <div className="flex items-center gap-1 text-sm">
-                    <span className="text-yellow-400">★</span>
-                    <span className="text-gray-600">{teacher.rating}</span>
+                  <div
+                    className={cn(
+                      "flex items-center gap-1 text-sm",
+                      themeClasses.textSecondary
+                    )}
+                  >
+                    <span className="text-theme-warning">★</span>
+                    <span>{teacher.rating}</span>
                     {teacher.totalRatings && (
-                      <span className="text-gray-500">
+                      <span className={themeClasses.textMuted}>
                         ({teacher.totalRatings})
                       </span>
                     )}
@@ -170,7 +207,12 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
           <form onSubmit={handleSubmit}>
             {/* Duration */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                className={cn(
+                  "block text-sm font-medium mb-2",
+                  themeClasses.textPrimary
+                )}
+              >
                 Duration
               </label>
               <select
@@ -181,7 +223,7 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
                     duration: parseInt(e.target.value),
                   })
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={cn(componentPatterns.input)}
               >
                 {getDurationOptions().map((option) => (
                   <option key={option.value} value={option.value}>
@@ -193,7 +235,13 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
 
             {/* Date */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              {" "}
+              <label
+                className={cn(
+                  "block text-sm font-medium mb-2",
+                  themeClasses.textPrimary
+                )}
+              >
                 Date
               </label>
               <select
@@ -202,7 +250,7 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
                   setSelectedDate(e.target.value);
                   setFormData({ ...formData, scheduledFor: "" });
                 }}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={cn(componentPatterns.input)}
               >
                 <option value="">Select a date</option>
                 {getDateOptions().map((option) => (
@@ -216,22 +264,31 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
             {/* Time Slots */}
             {selectedDate && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  className={cn(
+                    "block text-sm font-medium mb-2",
+                    themeClasses.textPrimary
+                  )}
+                >
                   Available Time Slots
                 </label>
                 {loading ? (
                   <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <div
+                      className={cn(
+                        "animate-spin rounded-full h-6 w-6 border-b-2 border-border-accent mx-auto"
+                      )}
+                    ></div>
+                    <p className={cn("text-sm mt-2", themeClasses.textMuted)}>
                       Loading slots...
                     </p>
                   </div>
                 ) : availableSlots.length === 0 ? (
                   <div className="text-center py-4">
-                    <p className="text-sm text-gray-500 mb-2">
+                    <p className={cn("text-sm mb-2", themeClasses.textMuted)}>
                       No available slots for this date
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className={cn("text-xs", themeClasses.textMuted)}>
                       Try selecting a different date or check back later
                     </p>
                   </div>
@@ -244,11 +301,21 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
                         onClick={() =>
                           setFormData({ ...formData, scheduledFor: slot.start })
                         }
-                        className={`p-2 text-sm rounded-lg border transition-colors ${
+                        className={cn(
+                          "p-2 text-sm rounded-lg border transition-colors",
                           formData.scheduledFor === slot.start
-                            ? "bg-blue-100 border-blue-300 text-blue-800"
-                            : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
+                            ? cn(
+                                themeClasses.bgTertiary,
+                                themeClasses.borderAccent,
+                                themeClasses.textAccent
+                              )
+                            : cn(
+                                themeClasses.bgPrimary,
+                                themeClasses.borderSecondary,
+                                themeClasses.textPrimary,
+                                themeClasses.hover
+                              )
+                        )}
                       >
                         {formatTimeSlot(slot)}
                       </button>
@@ -260,7 +327,12 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
 
             {/* Message */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                className={cn(
+                  "block text-sm font-medium mb-2",
+                  themeClasses.textPrimary
+                )}
+              >
                 Message (optional)
               </label>
               <textarea
@@ -271,9 +343,14 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
                 placeholder="Tell the teacher what you'd like to learn or any specific requirements..."
                 maxLength={500}
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className={cn(componentPatterns.input, "resize-none")}
               />
-              <div className="text-xs text-gray-500 mt-1 text-right">
+              <div
+                className={cn(
+                  "text-xs mt-1 text-right",
+                  themeClasses.textMuted
+                )}
+              >
                 {formData.message.length}/500
               </div>
             </div>
@@ -284,14 +361,23 @@ const ScheduleSession = ({ teacher, skill, onClose, onSuccess }) => {
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className={cn(
+                  buttonVariants.secondary,
+                  "flex-1",
+                  submitting && "opacity-50 cursor-not-allowed"
+                )}
               >
                 Cancel
-              </button>
+              </button>{" "}
               <button
                 type="submit"
                 disabled={submitting || !formData.scheduledFor}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className={cn(
+                  buttonVariants.primary,
+                  "flex-1",
+                  (submitting || !formData.scheduledFor) &&
+                    themeClasses.disabled
+                )}
               >
                 {submitting ? "Booking..." : "Book Session"}
               </button>

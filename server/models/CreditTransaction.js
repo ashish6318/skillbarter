@@ -6,11 +6,14 @@ const creditTransactionSchema = new mongoose.Schema({
     ref: 'User', 
     required: true 
   },
-  
-  // Transaction Details
+    // Transaction Details
   type: { 
     type: String, 
-    enum: ['earned', 'spent', 'bonus', 'refund', 'penalty'],
+    enum: [
+      'earned', 'spent', 'bonus', 'refund', 'penalty',
+      'session_booking', 'session_cancellation', 'session_completion',
+      'credit_purchase', 'credit_transfer'
+    ],
     required: true 
   },
   amount: { type: Number, required: true },
@@ -25,12 +28,14 @@ const creditTransactionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User' 
   },
-  
-  // Description
+    // Description
   description: { type: String, required: true },
   category: { 
     type: String, 
-    enum: ['teaching', 'learning', 'bonus', 'refund', 'admin'],
+    enum: [
+      'teaching', 'learning', 'bonus', 'refund', 'admin',
+      'session', 'purchase', 'transfer'
+    ],
     required: true 
   },
   

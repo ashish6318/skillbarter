@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jitsi Test</title>
+    <script src="https://meet.ffmuc.net/external_api.js"></script>
+</head>
+<body>
+    <div id="jitsi-container" style="width: 100%; height: 600px;"></div>
+    
+    <script>        // Test with working Jitsi server
+        const domain = "meet.ffmuc.net"; // This one works without lobby!
+        const options = {
+            roomName: "TestRoom789", // Simpler room name
+            width: "100%",
+            height: "600px",
+            parentNode: document.getElementById('jitsi-container'),
+            userInfo: {
+                displayName: "Test User",
+                email: "test@example.com"
+            },            configOverwrite: {
+                prejoinPageEnabled: false,
+                requireDisplayName: false,
+                startWithAudioMuted: true,
+                startWithVideoMuted: true,
+                // CRITICAL: Disable lobby/waiting room
+                enableLobby: false,
+                enableAutomaticLobby: false,
+                roomPasswordNumberOfDigits: false,
+            }
+        };
+
+        console.log('Creating Jitsi API with options:', options);
+        
+        const api = new JitsiMeetExternalAPI(domain, options);
+        
+        api.addEventListener('videoConferenceJoined', (participant) => {
+            console.log('Successfully joined conference:', participant);
+        });
+        
+        api.addEventListener('videoConferenceLeft', () => {
+            console.log('Left conference');
+        });
+        
+        api.addEventListener('participantJoined', (participant) => {
+            console.log('Participant joined:', participant);
+        });
+        
+        api.addEventListener('readyToClose', () => {
+            console.log('Ready to close');
+        });
+    </script>
+</body>
+</html>

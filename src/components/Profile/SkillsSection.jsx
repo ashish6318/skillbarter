@@ -1,5 +1,11 @@
 import React from "react";
 import { PlusIcon, XMarkIcon, StarIcon } from "@heroicons/react/24/outline";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  buttonVariants,
+} from "../../utils/theme";
 
 const SkillsSection = ({
   skills = [],
@@ -18,7 +24,7 @@ const SkillsSection = ({
       case "expert":
         return "text-purple-400 bg-purple-400 bg-opacity-20";
       default:
-        return "text-accent-400 bg-accent-400 bg-opacity-20";
+        return cn(themeClasses.textAccent, themeClasses.bgTertiary);
     }
   };
 
@@ -36,29 +42,43 @@ const SkillsSection = ({
         return 0;
     }
   };
-
   return (
-    <div className="bg-card rounded-xl p-6">
+    <div className={componentPatterns.card}>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-mono font-bold text-dark-50">Skills</h2>
+        <h2
+          className={cn(
+            "text-xl font-mono font-bold",
+            themeClasses.textPrimary
+          )}
+        >
+          Skills
+        </h2>
         {isEditable && (
           <button
             onClick={onAddSkill}
-            className="flex items-center gap-2 px-3 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors font-mono text-sm"
+            className={cn(
+              buttonVariants.primary,
+              "flex items-center gap-2 text-sm"
+            )}
           >
             <PlusIcon className="w-4 h-4" />
             Add Skill
           </button>
         )}
-      </div>
-
+      </div>{" "}
       {skills.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-dark-300 font-mono mb-4">No skills added yet</p>
+          <p className={cn("font-mono mb-4", themeClasses.textSecondary)}>
+            No skills added yet
+          </p>
           {isEditable && (
             <button
               onClick={onAddSkill}
-              className="text-accent-400 hover:text-accent-300 font-mono text-sm underline"
+              className={cn(
+                "font-mono text-sm underline",
+                themeClasses.textAccent,
+                "hover:text-accent-hover"
+              )}
             >
               Add your first skill
             </button>

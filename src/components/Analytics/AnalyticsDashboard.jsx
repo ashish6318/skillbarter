@@ -11,6 +11,12 @@ import {
 import { creditsAPI } from "../../utils/api";
 import LoadingSpinner from "../Common/LoadingSpinner";
 import { format, subDays, eachDayOfInterval } from "date-fns";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  buttonVariants,
+} from "../../utils/theme";
 
 const AnalyticsDashboard = () => {
   const [data, setData] = useState({
@@ -146,10 +152,14 @@ const AnalyticsDashboard = () => {
       }))
       .sort((a, b) => b.amount - a.amount);
   };
-
   if (data.loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div
+        className={cn(
+          "flex items-center justify-center h-64",
+          themeClasses.bgPrimary
+        )}
+      >
         <LoadingSpinner />
       </div>
     );
@@ -163,10 +173,10 @@ const AnalyticsDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className={cn("text-2xl font-bold", themeClasses.textPrimary)}>
             Analytics Dashboard
           </h2>
-          <p className="text-gray-600">
+          <p className={cn(themeClasses.textSecondary)}>
             Track your credit activity and performance
           </p>
         </div>
@@ -175,7 +185,7 @@ const AnalyticsDashboard = () => {
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className={cn(componentPatterns.input, "px-3 py-2")}
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
@@ -184,14 +194,16 @@ const AnalyticsDashboard = () => {
 
           <button
             onClick={fetchAnalyticsData}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className={cn(
+              buttonVariants.primary,
+              "flex items-center px-4 py-2"
+            )}
           >
             <ArrowPathIcon className="w-4 h-4 mr-2" />
             Refresh
           </button>
         </div>
-      </div>
-
+      </div>{" "}
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsCards.map((card, index) => {
@@ -199,35 +211,65 @@ const AnalyticsDashboard = () => {
           const isPositive = card.change >= 0;
 
           return (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-            >
+            <div key={index} className={cn(componentPatterns.card, "p-6")}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p
+                    className={cn(
+                      "text-sm font-medium",
+                      themeClasses.textSecondary
+                    )}
+                  >
                     {card.title}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                  <p
+                    className={cn(
+                      "text-2xl font-bold mt-2",
+                      themeClasses.textPrimary
+                    )}
+                  >
                     {card.value}
                   </p>
                 </div>
-                <div className={`p-3 rounded-full bg-${card.color}-100`}>
-                  <Icon className={`w-6 h-6 text-${card.color}-600`} />
+                <div
+                  className={cn(
+                    "p-3 rounded-full",
+                    card.color === "blue"
+                      ? themeClasses.infoLight
+                      : card.color === "green"
+                      ? themeClasses.successLight
+                      : card.color === "red"
+                      ? themeClasses.errorLight
+                      : themeClasses.warningLight
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "w-6 h-6",
+                      card.color === "blue"
+                        ? themeClasses.info
+                        : card.color === "green"
+                        ? themeClasses.success
+                        : card.color === "red"
+                        ? themeClasses.error
+                        : themeClasses.warning
+                    )}
+                  />
                 </div>
               </div>
 
               {card.change !== 0 && (
                 <div className="mt-4 flex items-center">
                   <span
-                    className={`text-sm font-medium ${
-                      isPositive ? "text-green-600" : "text-red-600"
-                    }`}
+                    className={cn(
+                      "text-sm font-medium",
+                      isPositive ? themeClasses.success : themeClasses.error
+                    )}
                   >
                     {isPositive ? "+" : ""}
                     {card.change}%
                   </span>
-                  <span className="text-sm text-gray-500 ml-2">
+                  <span className={cn("text-sm ml-2", themeClasses.textMuted)}>
                     vs last period
                   </span>
                 </div>
@@ -235,18 +277,18 @@ const AnalyticsDashboard = () => {
             </div>
           );
         })}
-      </div>
-
+      </div>{" "}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Credit Activity Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className={cn(componentPatterns.card, "p-6")}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3
+              className={cn("text-lg font-semibold", themeClasses.textPrimary)}
+            >
               Credit Activity
             </h3>
-            <ChartBarIcon className="w-5 h-5 text-gray-400" />
+            <ChartBarIcon className={cn("w-5 h-5", themeClasses.textMuted)} />
           </div>
-
           <div className="h-64 flex items-end justify-between space-x-2">
             {data.chartData.map((day, index) => {
               const maxValue = Math.max(
@@ -261,62 +303,83 @@ const AnalyticsDashboard = () => {
                 <div key={index} className="flex flex-col items-center flex-1">
                   <div className="flex items-end space-x-1 mb-2 h-52">
                     <div
-                      className="bg-green-500 rounded-t w-4 transition-all hover:bg-green-600"
+                      className={cn(
+                        "rounded-t w-4 transition-all",
+                        "bg-theme-success hover:bg-theme-success/80"
+                      )}
                       style={{ height: `${earnedHeight}px` }}
                       title={`Earned: ${day.earned} credits`}
                     />
                     <div
-                      className="bg-red-500 rounded-t w-4 transition-all hover:bg-red-600"
+                      className={cn(
+                        "rounded-t w-4 transition-all",
+                        "bg-theme-error hover:bg-theme-error/80"
+                      )}
                       style={{ height: `${spentHeight}px` }}
                       title={`Spent: ${day.spent} credits`}
                     />
                   </div>
-                  <span className="text-xs text-gray-500 transform rotate-45 mt-2">
+                  <span
+                    className={cn(
+                      "text-xs transform rotate-45 mt-2",
+                      themeClasses.textMuted
+                    )}
+                  >
                     {day.date}
                   </span>
                 </div>
               );
             })}
-          </div>
-
+          </div>{" "}
           <div className="flex justify-center mt-4 space-x-6">
             <div className="flex items-center">
-              <div className="w-3 h-3 bg-green-500 rounded mr-2" />
-              <span className="text-sm text-gray-600">Earned</span>
+              <div className="w-3 h-3 bg-theme-success rounded mr-2" />
+              <span className={cn("text-sm", themeClasses.textSecondary)}>
+                Earned
+              </span>
             </div>
             <div className="flex items-center">
-              <div className="w-3 h-3 bg-red-500 rounded mr-2" />
-              <span className="text-sm text-gray-600">Spent</span>
+              <div className="w-3 h-3 bg-theme-error rounded mr-2" />
+              <span className={cn("text-sm", themeClasses.textSecondary)}>
+                Spent
+              </span>
             </div>
           </div>
         </div>
 
         {/* Transaction Summary */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className={cn(componentPatterns.card, "p-6")}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3
+              className={cn("text-lg font-semibold", themeClasses.textPrimary)}
+            >
               Transaction Breakdown
             </h3>
-            <CreditCardIcon className="w-5 h-5 text-gray-400" />
+            <CreditCardIcon className={cn("w-5 h-5", themeClasses.textMuted)} />
           </div>
 
           <div className="space-y-3">
             {transactionSummary.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className={cn(
+                  "flex items-center justify-between p-3 rounded-lg",
+                  themeClasses.bgSecondary
+                )}
               >
                 <div>
-                  <p className="font-medium text-gray-900">{item.type}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className={cn("font-medium", themeClasses.textPrimary)}>
+                    {item.type}
+                  </p>
+                  <p className={cn("text-sm", themeClasses.textMuted)}>
                     {item.count} transactions
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900">
+                  <p className={cn("font-semibold", themeClasses.textPrimary)}>
                     {item.amount} credits
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className={cn("text-sm", themeClasses.textMuted)}>
                     {item.count > 0 ? Math.round(item.amount / item.count) : 0}{" "}
                     avg
                   </p>

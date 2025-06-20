@@ -12,9 +12,12 @@ import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import NotificationCenter from "../Notifications/NotificationCenter";
+import ThemeToggle from "./ThemeToggle";
+import { themeClasses, componentPatterns, cn } from "../../utils/theme";
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -22,14 +25,36 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleLogout = () => {
     logout();
     navigate("/");
+    setIsProfileDropdownOpen(false);
   };
 
   const isActiveRoute = (path) => {
     return location.pathname === path;
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle keyboard navigation for dropdown
+  const handleDropdownKeyDown = (event) => {
+    if (event.key === "Escape") {
+      setIsProfileDropdownOpen(false);
+    }
   };
 
   const navigationItems = [
@@ -39,42 +64,101 @@ const Navbar = () => {
     { name: "Sessions", href: "/sessions", icon: CalendarDaysIcon },
     { name: "Credits", href: "/credits", icon: CreditCardIcon },
   ];
-
   return (
-    <nav className="bg-dark-800 shadow-lg border-b border-dark-600 backdrop-blur-sm bg-opacity-95">
+    <nav
+      className={cn(
+        componentPatterns.navbar,
+        themeClasses.transitionColors,
+        "sticky top-0 z-50"
+      )}
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and brand */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2 group">
-              <div className="w-8 h-8 bg-gradient-to-br from-accent-400 to-accent-600 rounded-lg flex items-center justify-center shadow-glow transition-transform group-hover:scale-105">
-                <span className="text-white font-mono font-bold text-sm">
-                  &lt;/&gt;
+            {" "}
+            <Link
+              to="/"
+              className="flex items-center space-x-3 group"
+              aria-label="SkillBarter home"
+            >
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center relative overflow-hidden",
+                  "bg-gradient-to-br from-accent-primary to-accent-hover",
+                  themeClasses.shadowMd,
+                  themeClasses.transitionTransform,
+                  "group-hover:scale-105 group-hover:rotate-3"
+                )}
+              >
+                <span
+                  className={cn(
+                    "font-mono font-bold text-base",
+                    themeClasses.textInverse
+                  )}
+                >
+                  SB
+                </span>
+                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
+              <div className="flex flex-col">
+                <span
+                  className={cn(
+                    "text-xl font-mono font-bold transition-all duration-300",
+                    "group-hover:text-accent-primary",
+                    themeClasses.textPrimary
+                  )}
+                >
+                  SkillBarter
+                </span>
+                <span
+                  className={cn("text-xs font-mono", themeClasses.textMuted)}
+                >
+                  Learn & Share
                 </span>
               </div>
-              <span className="text-xl font-mono font-bold text-dark-50 group-hover:text-accent-400 transition-all">
-                SkillBarter
-              </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           {isAuthenticated && (
-            <div className="hidden md:flex items-center space-x-2">
+            <div className="hidden lg:flex items-center space-x-1">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
+                const isActive = isActiveRoute(item.href);
                 return (
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`flex items-center px-4 py-2 rounded-lg text-sm font-mono font-medium transition-all duration-200 ${
-                      isActiveRoute(item.href)
-                        ? "bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-glow"
-                        : "text-dark-200 hover:text-dark-50 hover:bg-dark-700"
-                    }`}
+                    className={cn(
+                      "relative flex items-center px-4 py-2 rounded-xl text-sm font-mono font-medium group",
+                      themeClasses.transition,
+                      isActive
+                        ? cn(
+                            themeClasses.gradientAccent,
+                            themeClasses.textInverse,
+                            themeClasses.shadowMd,
+                            "scale-105"
+                          )
+                        : cn(
+                            themeClasses.textSecondary,
+                            themeClasses.hover,
+                            "hover:scale-105 hover:text-text-primary"
+                          )
+                    )}
+                    aria-current={isActive ? "page" : undefined}
                   >
-                    <Icon className="w-4 h-4 mr-2" />
+                    <Icon
+                      className={cn(
+                        "w-4 h-4 mr-2 transition-transform group-hover:scale-110"
+                      )}
+                    />
                     {item.name}
+                    {isActive && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full" />
+                    )}
                   </Link>
                 );
               })}
@@ -85,64 +169,202 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             {/* Connection status indicator */}
             {isAuthenticated && (
-              <div className="flex items-center space-x-2">
+              <div
+                className={cn(
+                  "flex items-center space-x-2 px-3 py-1 rounded-full",
+                  themeClasses.bgTertiary
+                )}
+              >
                 <div
-                  className={`w-2 h-2 rounded-full animate-pulse ${
-                    isConnected ? "bg-success-500 shadow-soft" : "bg-error-500"
-                  }`}
+                  className={cn(
+                    "w-2 h-2 rounded-full",
+                    isConnected
+                      ? "bg-theme-success animate-pulse"
+                      : "bg-theme-error",
+                    isConnected ? themeClasses.shadowSm : ""
+                  )}
                   title={isConnected ? "Connected" : "Disconnected"}
+                  aria-label={
+                    isConnected
+                      ? "Connected to server"
+                      : "Disconnected from server"
+                  }
                 />
-                <span className="text-xs text-dark-400 font-mono">
+                <span
+                  className={cn(
+                    "text-xs font-mono font-medium",
+                    themeClasses.textMuted
+                  )}
+                >
                   {isConnected ? "ONLINE" : "OFFLINE"}
                 </span>
               </div>
             )}
-
             {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 {/* Credits display */}
-                <div className="hidden sm:flex items-center space-x-2 px-3 py-1 bg-dark-700 rounded-lg border border-dark-600">
-                  <CreditCardIcon className="w-4 h-4 text-accent-400" />
-                  <span className="text-sm font-mono font-medium text-dark-100">
+                <div
+                  className={cn(
+                    "hidden sm:flex items-center space-x-2 px-4 py-2 rounded-xl border transition-all duration-200",
+                    themeClasses.bgSecondary,
+                    themeClasses.borderPrimary,
+                    "hover:shadow-[var(--shadow-md)] hover:border-border-accent"
+                  )}
+                >
+                  <CreditCardIcon
+                    className={cn("w-4 h-4", themeClasses.textAccent)}
+                  />
+                  <span
+                    className={cn(
+                      "text-sm font-mono font-bold",
+                      themeClasses.textPrimary
+                    )}
+                  >
                     {user?.credits || 0}
                   </span>
+                  <span
+                    className={cn("text-xs font-mono", themeClasses.textMuted)}
+                  >
+                    credits
+                  </span>
                 </div>
+
+                {/* Theme Toggle */}
+                <ThemeToggle />
 
                 {/* Notification Center */}
                 <NotificationCenter />
 
                 {/* Profile dropdown */}
-                <div className="relative group">
-                  <button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-dark-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500">
-                    {user?.profilePicture ? (
-                      <img
-                        className="w-8 h-8 rounded-full object-cover ring-2 ring-dark-600"
-                        src={user.profilePicture}
-                        alt={user.firstName + " " + user.lastName}
-                      />
-                    ) : (
-                      <UserCircleIcon className="w-8 h-8 text-dark-400" />
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    className={cn(
+                      "flex items-center space-x-3 p-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2",
+                      themeClasses.hover,
+                      "focus:ring-accent-primary/30 hover:scale-105",
+                      isProfileDropdownOpen && "bg-bg-hover scale-105"
                     )}
-                    <span className="hidden sm:block text-sm font-mono font-medium text-dark-200">
-                      {user?.firstName} {user?.lastName}
-                    </span>
+                    onClick={() =>
+                      setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                    }
+                    onKeyDown={handleDropdownKeyDown}
+                    aria-expanded={isProfileDropdownOpen}
+                    aria-haspopup="true"
+                    aria-label="User menu"
+                  >
+                    {user?.profilePicture ? (
+                      <div className="relative">
+                        <img
+                          className={cn(
+                            "w-8 h-8 rounded-full object-cover ring-2 transition-all duration-200",
+                            themeClasses.borderAccent,
+                            "hover:ring-4 hover:ring-accent-primary/20"
+                          )}
+                          src={user.profilePicture}
+                          alt={`${user.firstName} ${user.lastName}`}
+                        />
+                        <div
+                          className={cn(
+                            "absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2",
+                            isConnected ? "bg-theme-success" : "bg-theme-error",
+                            themeClasses.borderPrimary
+                          )}
+                        />
+                      </div>
+                    ) : (
+                      <UserCircleIcon
+                        className={cn("w-8 h-8", themeClasses.textMuted)}
+                      />
+                    )}
+                    <div className="hidden sm:block text-left">
+                      <span
+                        className={cn(
+                          "block text-sm font-mono font-medium",
+                          themeClasses.textPrimary
+                        )}
+                      >
+                        {user?.firstName} {user?.lastName}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-xs font-mono",
+                          themeClasses.textMuted
+                        )}
+                      >
+                        @{user?.username || "user"}
+                      </span>
+                    </div>
+                    <ChevronDownIcon
+                      className={cn(
+                        "w-4 h-4 transition-transform duration-200",
+                        themeClasses.textMuted,
+                        isProfileDropdownOpen && "rotate-180"
+                      )}
+                    />
                   </button>
 
                   {/* Dropdown menu */}
-                  <div className="absolute right-0 mt-2 w-48 bg-dark-800 rounded-xl shadow-medium border border-dark-600 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-glass">
+                  <div
+                    className={cn(
+                      "absolute right-0 mt-2 w-56 rounded-2xl border opacity-0 invisible transition-all duration-200 z-50",
+                      componentPatterns.dropdown,
+                      "bg-bg-primary/95 backdrop-blur-lg",
+                      isProfileDropdownOpen &&
+                        "opacity-100 visible transform scale-100",
+                      !isProfileDropdownOpen && "scale-95"
+                    )}
+                    role="menu"
+                    aria-orientation="vertical"
+                    aria-labelledby="user-menu"
+                  >
                     <div className="py-2">
+                      <div
+                        className={cn(
+                          "px-4 py-3 border-b",
+                          themeClasses.borderSecondary
+                        )}
+                      >
+                        <p
+                          className={cn(
+                            "text-sm font-mono font-medium",
+                            themeClasses.textPrimary
+                          )}
+                        >
+                          {user?.firstName} {user?.lastName}
+                        </p>
+                        <p
+                          className={cn(
+                            "text-xs font-mono",
+                            themeClasses.textMuted
+                          )}
+                        >
+                          {user?.email}
+                        </p>
+                      </div>
                       <Link
                         to="/profile"
-                        className="flex items-center px-4 py-3 text-sm font-mono text-dark-200 hover:bg-dark-700 hover:text-dark-50 transition-colors"
+                        className={cn(
+                          "flex items-center px-4 py-3 text-sm font-mono transition-colors group",
+                          themeClasses.textSecondary,
+                          themeClasses.hover,
+                          "hover:text-text-primary"
+                        )}
+                        role="menuitem"
+                        onClick={() => setIsProfileDropdownOpen(false)}
                       >
-                        <UserCircleIcon className="w-4 h-4 mr-3" />
-                        Profile
+                        <UserCircleIcon className="w-4 h-4 mr-3 group-hover:scale-110 transition-transform" />
+                        Profile Settings
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-3 text-sm font-mono text-dark-200 hover:bg-error-500 hover:text-white transition-colors"
+                        className={cn(
+                          "flex items-center w-full px-4 py-3 text-sm font-mono transition-colors group",
+                          themeClasses.textSecondary,
+                          "hover:bg-theme-error/10 hover:text-theme-error"
+                        )}
+                        role="menuitem"
                       >
-                        <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3" />
+                        <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3 group-hover:scale-110 transition-transform" />
                         Sign out
                       </button>
                     </div>
@@ -151,26 +373,47 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
+                {/* Theme Toggle for non-authenticated users */}
+                <ThemeToggle />
+
                 <Link
                   to="/login"
-                  className="text-dark-300 hover:text-dark-50 px-4 py-2 rounded-lg text-sm font-mono font-medium transition-colors"
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-sm font-mono font-medium transition-all duration-200",
+                    themeClasses.textMuted,
+                    "hover:text-text-primary hover:scale-105"
+                  )}
                 >
                   Sign in
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-400 hover:to-accent-500 text-white px-6 py-2 rounded-lg text-sm font-mono font-medium transition-all duration-200 shadow-glow hover:scale-105"
+                  className={cn(
+                    "px-6 py-2 rounded-xl text-sm font-mono font-medium transition-all duration-200 transform hover:scale-105",
+                    themeClasses.gradientAccent,
+                    themeClasses.gradientHover,
+                    themeClasses.textInverse,
+                    themeClasses.shadowMd,
+                    "hover:shadow-[var(--shadow-lg)]"
+                  )}
                 >
                   Sign up
                 </Link>
               </div>
-            )}
-
+            )}{" "}
             {/* Mobile menu button */}
             {isAuthenticated && (
               <button
-                className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-dark-400 hover:text-dark-50 hover:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-accent-500 transition-colors"
+                className={cn(
+                  "lg:hidden inline-flex items-center justify-center p-2 rounded-xl focus:outline-none focus:ring-2 transition-all duration-200",
+                  themeClasses.textMuted,
+                  "hover:text-text-primary hover:scale-105",
+                  themeClasses.hover,
+                  "focus:ring-accent-primary/30"
+                )}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-expanded={isMobileMenuOpen}
+                aria-label="Toggle mobile menu"
               >
                 {isMobileMenuOpen ? (
                   <XMarkIcon className="w-6 h-6" />
@@ -180,35 +423,160 @@ const Navbar = () => {
               </button>
             )}
           </div>
-        </div>
-
+        </div>{" "}
         {/* Mobile menu */}
         {isAuthenticated && isMobileMenuOpen && (
-          <div className="md:hidden animate-slide-up">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-dark-600 bg-dark-800">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`flex items-center px-4 py-3 rounded-lg text-base font-mono font-medium transition-colors ${
-                      isActiveRoute(item.href)
-                        ? "bg-accent-500 text-white"
-                        : "text-dark-300 hover:text-dark-50 hover:bg-dark-700"
-                    }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Icon className="w-5 h-5 mr-3" />
-                    {item.name}
-                  </Link>
-                );
-              })}
+          <div
+            className={cn(
+              "lg:hidden animate-slide-up",
+              "absolute top-full left-0 right-0 z-40"
+            )}
+          >
+            <div
+              className={cn(
+                "mx-4 mt-2 rounded-2xl border backdrop-blur-lg",
+                themeClasses.borderSecondary,
+                "bg-bg-primary/95",
+                themeClasses.shadowLg
+              )}
+            >
+              <div className="px-4 py-6 space-y-2">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = isActiveRoute(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={cn(
+                        "flex items-center px-4 py-3 rounded-xl text-base font-mono font-medium transition-all duration-200 group",
+                        isActive
+                          ? cn(
+                              themeClasses.gradientAccent,
+                              themeClasses.textInverse,
+                              "scale-105"
+                            )
+                          : cn(
+                              themeClasses.textMuted,
+                              "hover:text-text-primary hover:scale-105",
+                              themeClasses.hover
+                            )
+                      )}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Icon
+                        className={cn(
+                          "w-5 h-5 mr-3 transition-transform group-hover:scale-110"
+                        )}
+                      />
+                      {item.name}
+                      {isActive && (
+                        <div className="ml-auto w-2 h-2 bg-current rounded-full" />
+                      )}
+                    </Link>
+                  );
+                })}
 
-              {/* Credits display on mobile */}
-              <div className="flex items-center px-4 py-3 text-sm text-dark-400 bg-dark-700 rounded-lg mx-2 mt-2">
-                <CreditCardIcon className="w-5 h-5 mr-3 text-accent-500" />
-                <span className="font-mono">Credits: {user?.credits || 0}</span>
+                {/* Credits display on mobile */}
+                <div
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3 text-sm rounded-xl mx-0 mt-4 border",
+                    themeClasses.bgTertiary,
+                    themeClasses.borderSecondary
+                  )}
+                >
+                  <div className="flex items-center">
+                    <CreditCardIcon
+                      className={cn("w-5 h-5 mr-3", themeClasses.textAccent)}
+                    />
+                    <span
+                      className={cn(
+                        "font-mono font-medium",
+                        themeClasses.textPrimary
+                      )}
+                    >
+                      Credits
+                    </span>
+                  </div>
+                  <span
+                    className={cn(
+                      "font-mono font-bold text-lg",
+                      themeClasses.textAccent
+                    )}
+                  >
+                    {user?.credits || 0}
+                  </span>
+                </div>
+
+                {/* Mobile profile section */}
+                <div
+                  className={cn(
+                    "pt-4 mt-4 border-t",
+                    themeClasses.borderSecondary
+                  )}
+                >
+                  <div className="flex items-center px-4 py-3">
+                    {user?.profilePicture ? (
+                      <img
+                        className={cn(
+                          "w-10 h-10 rounded-full object-cover ring-2",
+                          themeClasses.borderAccent
+                        )}
+                        src={user.profilePicture}
+                        alt={`${user.firstName} ${user.lastName}`}
+                      />
+                    ) : (
+                      <UserCircleIcon
+                        className={cn("w-10 h-10", themeClasses.textMuted)}
+                      />
+                    )}
+                    <div className="ml-3 flex-1">
+                      <p
+                        className={cn(
+                          "text-sm font-mono font-medium",
+                          themeClasses.textPrimary
+                        )}
+                      >
+                        {user?.firstName} {user?.lastName}
+                      </p>
+                      <p
+                        className={cn(
+                          "text-xs font-mono",
+                          themeClasses.textMuted
+                        )}
+                      >
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 px-2">
+                    <Link
+                      to="/profile"
+                      className={cn(
+                        "flex items-center px-4 py-3 rounded-xl text-sm font-mono transition-colors group",
+                        themeClasses.textSecondary,
+                        themeClasses.hover,
+                        "hover:text-text-primary"
+                      )}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <UserCircleIcon className="w-4 h-4 mr-3 group-hover:scale-110 transition-transform" />
+                      Profile Settings
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className={cn(
+                        "flex items-center w-full px-4 py-3 rounded-xl text-sm font-mono transition-colors group",
+                        themeClasses.textSecondary,
+                        "hover:bg-theme-error/10 hover:text-theme-error"
+                      )}
+                    >
+                      <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3 group-hover:scale-110 transition-transform" />
+                      Sign out
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

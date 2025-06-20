@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
+import { themeClasses, componentPatterns, cn } from "../../utils/theme";
 
 const SearchFilter = ({ onSearch, onFilterChange, loading }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,48 +39,85 @@ const SearchFilter = ({ onSearch, onFilterChange, loading }) => {
     setSearchTerm("");
     onSearch("");
   };
-
   return (
-    <div className="bg-card rounded-lg p-4 mb-6 border border-dark-600">
+    <div className={cn(componentPatterns.card, "mb-8", themeClasses.hover)}>
       {/* Search Bar */}
-      <form onSubmit={handleSearch} className="flex gap-3 mb-4">
-        <div className="flex-1 relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-dark-400" />
+      <form onSubmit={handleSearch} className="flex gap-3 mb-6">
+        <div className="flex-1 relative group">
+          <MagnifyingGlassIcon
+            className={cn(
+              "absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5",
+              themeClasses.textMuted,
+              "group-focus-within:text-accent-primary",
+              themeClasses.transitionColors
+            )}
+          />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search for skills..."
-            className="w-full pl-10 pr-4 py-2 bg-dark-700 border border-dark-600 rounded-lg font-mono text-sm text-dark-50 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+            placeholder="Search for skills, expertise, or keywords..."
+            className={cn(
+              componentPatterns.input,
+              "w-full pl-12 pr-4 py-3",
+              "placeholder:text-text-muted"
+            )}
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white rounded-lg transition-colors font-mono text-sm"
+          className={cn(
+            componentPatterns.buttonPrimary,
+            "px-6 py-3 font-medium",
+            themeClasses.disabled
+          )}
         >
           Search
         </button>
         <button
           type="button"
           onClick={() => setShowFilters(!showFilters)}
-          className="px-4 py-2 bg-dark-700 hover:bg-dark-600 text-dark-100 rounded-lg transition-colors border border-dark-600 hover:border-accent-400"
+          className={cn(
+            "px-4 py-3 rounded-lg border font-medium",
+            themeClasses.transition,
+            showFilters
+              ? cn(
+                  "bg-accent-light border-border-accent text-accent-primary",
+                  themeClasses.hover
+                )
+              : cn(
+                  themeClasses.bgSecondary,
+                  themeClasses.borderSecondary,
+                  themeClasses.textSecondary,
+                  themeClasses.hover
+                )
+          )}
         >
-          <FunnelIcon className="w-4 h-4" />
+          <FunnelIcon className="w-5 h-5" />
         </button>
-      </form>
-
+      </form>{" "}
       {/* Filters */}
       {showFilters && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-dark-600">
+        <div
+          className={cn(
+            "grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t animate-fade-in",
+            themeClasses.borderSecondary
+          )}
+        >
           <div>
-            <label className="block text-sm font-mono font-medium text-dark-200 mb-2">
+            <label
+              className={cn(
+                "block text-sm font-medium mb-2",
+                themeClasses.textPrimary
+              )}
+            >
               Category
             </label>
             <select
               value={filters.category}
               onChange={(e) => handleFilterChange("category", e.target.value)}
-              className="w-full px-3 py-2 bg-dark-700 border border-dark-600 rounded-lg font-mono text-sm text-dark-50 focus:outline-none focus:ring-2 focus:ring-accent-500"
+              className={cn(componentPatterns.input, "w-full px-4 py-3")}
             >
               <option value="">All Categories</option>
               {categories.map((category) => (
@@ -91,7 +129,12 @@ const SearchFilter = ({ onSearch, onFilterChange, loading }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-mono font-medium text-dark-200 mb-2">
+            <label
+              className={cn(
+                "block text-sm font-medium mb-2",
+                themeClasses.textPrimary
+              )}
+            >
               Country
             </label>
             <input
@@ -99,14 +142,25 @@ const SearchFilter = ({ onSearch, onFilterChange, loading }) => {
               value={filters.country}
               onChange={(e) => handleFilterChange("country", e.target.value)}
               placeholder="Enter country..."
-              className="w-full px-3 py-2 bg-dark-700 border border-dark-600 rounded-lg font-mono text-sm text-dark-50 focus:outline-none focus:ring-2 focus:ring-accent-500"
+              className={cn(
+                componentPatterns.input,
+                "w-full px-4 py-3",
+                "placeholder:text-text-muted"
+              )}
             />
           </div>
 
           <div className="flex items-end">
             <button
               onClick={clearFilters}
-              className="px-4 py-2 bg-error-500 hover:bg-error-600 text-white rounded-lg transition-colors font-mono text-sm"
+              className={cn(
+                "w-full px-4 py-3 rounded-lg font-medium",
+                themeClasses.errorLight,
+                themeClasses.error,
+                "border border-[var(--error)]",
+                themeClasses.transition,
+                "hover:bg-[var(--error)] hover:text-text-inverse"
+              )}
             >
               Clear All
             </button>

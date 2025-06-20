@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import { XMarkIcon, StarIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  buttonVariants,
+} from "../../utils/theme";
 
 const AddSkillModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -110,28 +116,54 @@ const AddSkillModal = ({ isOpen, onClose, onSave }) => {
   };
 
   if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-dark-800 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div
+      className={cn(
+        "fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4",
+        "bg-black/50"
+      )}
+    >
+      <div
+        className={cn(
+          componentPatterns.modal,
+          "w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        )}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-dark-600">
-          <h2 className="text-xl font-mono font-bold text-dark-50">
+        <div
+          className={cn(
+            "flex items-center justify-between p-6 border-b",
+            themeClasses.borderSecondary
+          )}
+        >
+          <h2
+            className={cn(
+              "text-xl font-mono font-bold",
+              themeClasses.textPrimary
+            )}
+          >
             Add New Skill
           </h2>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
+            className={cn(
+              "p-2 rounded-lg transition-colors",
+              themeClasses.hover
+            )}
           >
-            <XMarkIcon className="w-5 h-5 text-dark-300" />
+            <XMarkIcon className={cn("w-5 h-5", themeClasses.textMuted)} />
           </button>
-        </div>
-
+        </div>{" "}
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {errors.general && (
-            <div className="p-4 bg-error-500 bg-opacity-10 border border-error-500 rounded-lg">
-              <p className="text-error-500 font-mono text-sm">
+            <div
+              className={cn(
+                "p-4 rounded-lg border",
+                "bg-red-500/10 border-red-500/50"
+              )}
+            >
+              <p className={cn("text-sm", themeClasses.textPrimary)}>
                 {errors.general}
               </p>
             </div>
@@ -139,54 +171,67 @@ const AddSkillModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Skill Name */}
           <div>
-            <label className="block text-sm font-mono font-medium text-dark-200 mb-2">
+            <label
+              className={cn(
+                "block text-sm font-medium mb-2",
+                themeClasses.textPrimary
+              )}
+            >
               Skill Name *
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
-              className={`w-full px-3 py-2 bg-dark-700 border rounded-lg font-mono text-sm text-dark-50 ${
-                errors.name ? "border-error-500" : "border-dark-600"
-              }`}
+              className={cn(
+                componentPatterns.input,
+                errors.name && "border-red-500"
+              )}
               placeholder="e.g., React.js, Guitar, Cooking"
             />
             {errors.name && (
-              <p className="text-error-500 font-mono text-xs mt-1">
-                {errors.name}
-              </p>
+              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
             )}
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-mono font-medium text-dark-200 mb-2">
+            <label
+              className={cn(
+                "block text-sm font-medium mb-2",
+                themeClasses.textPrimary
+              )}
+            >
               Category *
             </label>
             <select
               value={formData.category}
               onChange={(e) => handleInputChange("category", e.target.value)}
-              className={`w-full px-3 py-2 bg-dark-700 border rounded-lg font-mono text-sm text-dark-50 ${
-                errors.category ? "border-error-500" : "border-dark-600"
-              }`}
+              className={cn(
+                componentPatterns.input,
+                errors.category && "border-red-500"
+              )}
             >
               <option value="">Select a category</option>
               {skillCategories.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
-              ))}
+              ))}{" "}
             </select>
             {errors.category && (
-              <p className="text-error-500 font-mono text-xs mt-1">
-                {errors.category}
-              </p>
+              <p className="text-red-500 text-xs mt-1">{errors.category}</p>
             )}
           </div>
 
           {/* Skill Level */}
           <div>
-            <label className="block text-sm font-mono font-medium text-dark-200 mb-2">
+            <label
+              className={cn(
+                "block text-sm font-medium mb-2",
+                themeClasses.textPrimary
+              )}
+            >
               Skill Level
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -195,25 +240,31 @@ const AddSkillModal = ({ isOpen, onClose, onSave }) => {
                   key={level.value}
                   type="button"
                   onClick={() => handleInputChange("level", level.value)}
-                  className={`p-3 rounded-lg border transition-colors text-left ${
+                  className={cn(
+                    "p-3 rounded-lg border transition-colors text-left",
                     formData.level === level.value
-                      ? "border-accent-400 bg-accent-400 bg-opacity-10"
-                      : "border-dark-600 bg-dark-700 hover:bg-dark-600"
-                  }`}
+                      ? cn(themeClasses.bgSecondary, themeClasses.borderAccent)
+                      : cn(
+                          themeClasses.bgSecondary,
+                          themeClasses.borderSecondary,
+                          themeClasses.hover
+                        )
+                  )}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-mono text-sm text-dark-50">
+                    <span className={cn("text-sm", themeClasses.textPrimary)}>
                       {level.label}
                     </span>
                     <div className="flex">
                       {[...Array(4)].map((_, i) => (
                         <StarIcon
                           key={i}
-                          className={`w-3 h-3 ${
+                          className={cn(
+                            "w-3 h-3",
                             i < level.stars
                               ? "text-yellow-400 fill-current"
-                              : "text-dark-500"
-                          }`}
+                              : themeClasses.textMuted
+                          )}
                         />
                       ))}
                     </div>
@@ -225,7 +276,12 @@ const AddSkillModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Years of Experience */}
           <div>
-            <label className="block text-sm font-mono font-medium text-dark-200 mb-2">
+            <label
+              className={cn(
+                "block text-sm font-medium mb-2",
+                themeClasses.textPrimary
+              )}
+            >
               Years of Experience (optional)
             </label>
             <input
@@ -236,15 +292,14 @@ const AddSkillModal = ({ isOpen, onClose, onSave }) => {
               onChange={(e) =>
                 handleInputChange("yearsOfExperience", e.target.value)
               }
-              className={`w-full px-3 py-2 bg-dark-700 border rounded-lg font-mono text-sm text-dark-50 ${
-                errors.yearsOfExperience
-                  ? "border-error-500"
-                  : "border-dark-600"
-              }`}
+              className={cn(
+                componentPatterns.input,
+                errors.yearsOfExperience && "border-red-500"
+              )}
               placeholder="0"
             />
             {errors.yearsOfExperience && (
-              <p className="text-error-500 font-mono text-xs mt-1">
+              <p className="text-red-500 text-xs mt-1">
                 {errors.yearsOfExperience}
               </p>
             )}
@@ -252,32 +307,45 @@ const AddSkillModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-mono font-medium text-dark-200 mb-2">
+            <label
+              className={cn(
+                "block text-sm font-medium mb-2",
+                themeClasses.textPrimary
+              )}
+            >
               Description (optional)
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 bg-dark-700 border border-dark-600 rounded-lg font-mono text-sm text-dark-50 resize-none"
+              className={cn(componentPatterns.input, "resize-none")}
               placeholder="Describe your experience with this skill..."
             />
           </div>
         </form>
-
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-dark-600">
+        <div
+          className={cn(
+            "flex justify-end gap-3 p-6 border-t",
+            themeClasses.borderSecondary
+          )}
+        >
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-dark-300 hover:text-dark-100 transition-colors font-mono text-sm"
+            className={cn(buttonVariants.secondary)}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-400 hover:to-accent-500 text-white rounded-lg transition-all font-mono text-sm disabled:opacity-50"
+            className={cn(
+              buttonVariants.primary,
+              "flex items-center gap-2",
+              loading && "opacity-50 cursor-not-allowed"
+            )}
           >
             <PlusIcon className="w-4 h-4" />
             {loading ? "Adding..." : "Add Skill"}

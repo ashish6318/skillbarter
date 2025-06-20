@@ -8,6 +8,7 @@ import {
   CalendarIcon,
 } from "@heroicons/react/24/outline";
 import ScheduleSession from "../Sessions/ScheduleSession";
+import { themeClasses, componentPatterns, cn } from "../../utils/theme";
 
 const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -23,102 +24,199 @@ const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
   const getFullName = (firstName, lastName) => {
     return [firstName, lastName].filter(Boolean).join(" ") || "Anonymous";
   };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-dark-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div
+      className={cn(
+        "fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in",
+        "bg-black/60"
+      )}
+    >
+      <div
+        className={cn(
+          componentPatterns.modal,
+          "w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-scale-in"
+        )}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-dark-600">
-          <h2 className="text-2xl font-mono font-bold text-dark-50">
+        <div
+          className={cn(
+            "flex items-center justify-between p-6 border-b",
+            themeClasses.borderSecondary,
+            "bg-gradient-to-r from-bg-primary to-bg-secondary/50"
+          )}
+        >
+          <h2
+            className={cn(
+              "text-2xl font-bold",
+              "bg-gradient-to-r from-text-primary to-accent-primary bg-clip-text text-transparent"
+            )}
+          >
             User Profile
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
+            className={cn(
+              "p-2 rounded-xl transition-all duration-200 hover:scale-105",
+              themeClasses.hover
+            )}
           >
-            <XMarkIcon className="w-5 h-5 text-dark-300" />
+            <XMarkIcon
+              className={cn(
+                "w-6 h-6",
+                themeClasses.textMuted,
+                "hover:text-text-primary"
+              )}
+            />
           </button>
-        </div>
-
+        </div>{" "}
         {/* Content */}
         <div className="p-6">
           {/* Profile Header */}
-          <div className="flex items-center mb-6">
-            <div className="w-20 h-20 rounded-full overflow-hidden bg-dark-700 flex items-center justify-center mr-6">
-              {user.profilePicture ? (
-                <img
-                  src={user.profilePicture}
-                  alt={getFullName(user.firstName, user.lastName)}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-2xl font-mono font-bold text-dark-300">
-                  {getInitials(user.firstName, user.lastName)}
-                </span>
+          <div className="flex items-center mb-8">
+            <div className="relative mr-6">
+              <div
+                className={cn(
+                  "w-20 h-20 rounded-full overflow-hidden flex items-center justify-center ring-4 shadow-lg",
+                  themeClasses.bgTertiary,
+                  "ring-border-secondary"
+                )}
+              >
+                {user.profilePicture ? (
+                  <img
+                    src={user.profilePicture}
+                    alt={getFullName(user.firstName, user.lastName)}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span
+                    className={cn(
+                      "text-2xl font-bold",
+                      "bg-gradient-to-br from-accent-primary to-accent-muted bg-clip-text text-transparent"
+                    )}
+                  >
+                    {getInitials(user.firstName, user.lastName)}
+                  </span>
+                )}
+              </div>
+              {user.isOnline && (
+                <div
+                  className={cn(
+                    "absolute -bottom-1 -right-1 w-6 h-6 border-4 rounded-full",
+                    themeClasses.successBg,
+                    "border-bg-primary"
+                  )}
+                ></div>
               )}
             </div>
             <div className="flex-1">
-              <h3 className="text-2xl font-mono font-bold text-dark-50 mb-2">
+              <h3
+                className={cn(
+                  "text-2xl font-bold mb-2",
+                  themeClasses.textPrimary
+                )}
+              >
                 {getFullName(user.firstName, user.lastName)}
               </h3>
-              <div className="flex items-center gap-4 text-dark-300">
-                {user.country && (
-                  <div className="flex items-center">
-                    <MapPinIcon className="w-4 h-4 mr-1" />
-                    <span className="font-mono text-sm">{user.country}</span>
-                  </div>
-                )}
-                <div className="flex items-center">
-                  <StarIcon className="w-4 h-4 mr-1" />
-                  <span className="font-mono text-sm">
-                    {user.rating ? user.rating.toFixed(1) : "New"}
-                    {user.totalReviews > 0 && ` (${user.totalReviews})`}
-                  </span>
+              {user.country && (
+                <div
+                  className={cn(
+                    "flex items-center mb-3",
+                    themeClasses.textSecondary
+                  )}
+                >
+                  <MapPinIcon className="w-5 h-5 mr-2" />
+                  <span className="text-lg">{user.country}</span>
                 </div>
-                <div className="flex items-center">
+              )}
+              <div className="flex items-center space-x-6 text-sm">
+                <div
+                  className={cn(
+                    "flex items-center",
+                    themeClasses.textSecondary
+                  )}
+                >
+                  <StarIcon
+                    className={cn(
+                      "w-4 h-4 mr-1 fill-current",
+                      "text-theme-warning"
+                    )}
+                  />
+                  <span className="font-medium">
+                    {user.rating ? user.rating.toFixed(1) : "New"}
+                  </span>
+                  {user.totalReviews > 0 && (
+                    <span className={cn("ml-1", themeClasses.textMuted)}>
+                      ({user.totalReviews} reviews)
+                    </span>
+                  )}
+                </div>
+                <div
+                  className={cn(
+                    "flex items-center",
+                    themeClasses.textSecondary
+                  )}
+                >
                   <ClockIcon className="w-4 h-4 mr-1" />
-                  <span className="font-mono text-sm">
+                  <span className="font-medium">
                     {user.totalHoursTaught || 0}h taught
                   </span>
                 </div>
               </div>
             </div>
-            {user.isOnline && (
-              <div className="flex items-center text-green-400">
-                <div className="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
-                <span className="font-mono text-sm">Online</span>
-              </div>
-            )}
           </div>
-          {/* Bio */}
+          About {/* Bio Section */}
           {user.bio && (
-            <div className="mb-6">
-              <h4 className="text-lg font-mono font-semibold text-dark-50 mb-3">
+            <div className="mb-8">
+              <h4
+                className={cn(
+                  "text-lg font-semibold mb-3",
+                  themeClasses.textPrimary
+                )}
+              >
                 About
               </h4>
-              <p className="text-dark-300 font-mono leading-relaxed">
+              <p className={cn("leading-relaxed", themeClasses.textSecondary)}>
                 {user.bio}
               </p>
             </div>
           )}{" "}
           {/* Skills Offered */}
           {user.skillsOffered?.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-lg font-mono font-semibold text-dark-50 mb-3">
+            <div className="mb-8">
+              <h4
+                className={cn(
+                  "text-lg font-semibold mb-4",
+                  themeClasses.textPrimary
+                )}
+              >
                 Skills Offered
               </h4>
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-4">
                 {user.skillsOffered.map((skill, index) => (
                   <div
                     key={index}
-                    className="bg-dark-700 rounded-lg p-4 border border-dark-600"
+                    className={cn(
+                      "rounded-lg p-4 border",
+                      themeClasses.bgSecondary,
+                      themeClasses.borderPrimary
+                    )}
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <h5 className="font-mono font-medium text-accent-400">
+                    <div className="flex justify-between items-start mb-3">
+                      <h5
+                        className={cn(
+                          "font-semibold text-lg",
+                          themeClasses.textPrimary
+                        )}
+                      >
                         {skill.skill}
                       </h5>
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 bg-accent-500 bg-opacity-20 text-accent-400 rounded-md text-xs font-mono">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={cn(
+                            "px-3 py-1 rounded-full text-sm font-medium",
+                            componentPatterns.badgeAccent
+                          )}
+                        >
                           {skill.experience || "Intermediate"}
                         </span>
                         <button
@@ -126,19 +224,32 @@ const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
                             setSelectedSkill(skill.skill);
                             setShowScheduleModal(true);
                           }}
-                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-mono transition-colors"
+                          className={cn(
+                            componentPatterns.buttonPrimary,
+                            "text-sm transform hover:-translate-y-0.5"
+                          )}
                         >
                           Book Session
                         </button>
                       </div>
                     </div>
                     {skill.category && (
-                      <p className="text-dark-400 font-mono text-xs mb-2">
-                        {skill.category}
+                      <p
+                        className={cn(
+                          "text-sm mb-2",
+                          themeClasses.textSecondary
+                        )}
+                      >
+                        Category: {skill.category}
                       </p>
                     )}
                     {skill.description && (
-                      <p className="text-dark-300 font-mono text-sm">
+                      <p
+                        className={cn(
+                          "text-sm leading-relaxed",
+                          themeClasses.textSecondary
+                        )}
+                      >
                         {skill.description}
                       </p>
                     )}
@@ -146,18 +257,27 @@ const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
                 ))}
               </div>
             </div>
-          )}
+          )}{" "}
           {/* Languages */}
           {user.languages?.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-lg font-mono font-semibold text-dark-50 mb-3">
+            <div className="mb-8">
+              <h4
+                className={cn(
+                  "text-lg font-semibold mb-4",
+                  themeClasses.textPrimary
+                )}
+              >
                 Languages
               </h4>
               <div className="flex flex-wrap gap-2">
                 {user.languages.map((language, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-dark-700 text-dark-200 rounded-full text-sm font-mono border border-dark-600"
+                    className={cn(
+                      componentPatterns.pill,
+                      "border",
+                      themeClasses.borderPrimary
+                    )}
                   >
                     {language}
                   </span>
@@ -166,22 +286,33 @@ const UserDetailModal = ({ user, isOpen, onClose, onMessage }) => {
             </div>
           )}
         </div>
-
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-dark-600">
+        <div
+          className={cn(
+            "flex justify-end gap-3 p-6 border-t",
+            themeClasses.borderSecondary
+          )}
+        >
           <button
             onClick={onClose}
-            className="px-4 py-2 text-dark-300 hover:text-dark-100 transition-colors font-mono text-sm"
+            className={cn(
+              "px-6 py-2 font-medium transition-colors",
+              themeClasses.textMuted,
+              "hover:text-text-primary"
+            )}
           >
             Close
           </button>
           <button
             onClick={() => onMessage(user)}
-            className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-400 hover:to-accent-500 text-white rounded-lg transition-all font-mono text-sm"
+            className={cn(
+              componentPatterns.buttonPrimary,
+              "flex items-center gap-2 transform hover:-translate-y-0.5"
+            )}
           >
             <ChatBubbleLeftIcon className="w-4 h-4" />
             Send Message
-          </button>{" "}
+          </button>
         </div>
       </div>
 

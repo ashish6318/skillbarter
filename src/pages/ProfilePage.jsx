@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "react-hot-toast";
 import ProfileHeader from "../components/Profile/ProfileHeader";
-import ProfileEditModal from "../components/Profile/ProfileEditModal";
 import SkillsSection from "../components/Profile/SkillsSection";
+import ProfileEditModal from "../components/Profile/ProfileEditModal";
 import AddSkillModal from "../components/Profile/AddSkillModal";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
+import toast from "react-hot-toast";
+import { themeClasses, cn } from "../utils/theme";
 
 const ProfilePage = () => {
   const { user, updateProfile, isLoading } = useAuth();
@@ -92,17 +93,21 @@ const ProfilePage = () => {
       toast.error("Failed to remove skill");
     }
   };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+      <div
+        className={cn(
+          "min-h-screen flex items-center justify-center",
+          themeClasses.bgPrimary
+        )}
+      >
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className={cn("min-h-screen", themeClasses.bgPrimary)}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Header */}
         <ProfileHeader

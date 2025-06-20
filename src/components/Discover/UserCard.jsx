@@ -11,86 +11,83 @@ const UserCard = ({ user, onClick }) => {
   const getFullName = (firstName, lastName) => {
     return [firstName, lastName].filter(Boolean).join(" ") || "Anonymous";
   };
-
   return (
     <div
       onClick={() => onClick?.(user)}
-      className="bg-card rounded-lg p-6 hover:shadow-glow transition-all duration-200 cursor-pointer border border-dark-600 hover:border-accent-400"
+      className="bg-bg-secondary border border-border-primary rounded-xl p-6 hover:shadow-[var(--shadow-lg)] transition-all duration-300 cursor-pointer hover:border-border-accent group hover:-translate-y-1"
     >
       {/* Profile Section */}
-      <div className="flex items-center mb-4">
-        <div className="w-12 h-12 rounded-full overflow-hidden bg-dark-700 flex items-center justify-center mr-4">
-          {user.profilePicture ? (
-            <img
-              src={user.profilePicture}
-              alt={getFullName(user.firstName, user.lastName)}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-lg font-mono font-bold text-dark-300">
-              {getInitials(user.firstName, user.lastName)}
-            </span>
+      <div className="flex items-center mb-5">
+        <div className="relative">
+          {" "}
+          <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-tertiary flex items-center justify-center mr-4 ring-2 ring-border-secondary group-hover:ring-border-accent transition-all duration-300">
+            {user.profilePicture ? (
+              <img
+                src={user.profilePicture}
+                alt={getFullName(user.firstName, user.lastName)}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-lg font-semibold text-accent-primary">
+                {getInitials(user.firstName, user.lastName)}
+              </span>
+            )}
+          </div>
+          {user.isOnline && (
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-theme-success border-2 border-bg-primary rounded-full"></div>
           )}
         </div>
-        <div className="flex-1">
-          <h3 className="font-mono font-semibold text-dark-50 text-lg">
+        <div className="flex-1 min-w-0">
+          {" "}
+          <h3 className="font-semibold text-text-primary text-lg leading-tight mb-1">
             {getFullName(user.firstName, user.lastName)}
           </h3>
           {user.country && (
-            <div className="flex items-center text-dark-400 text-sm">
-              <MapPinIcon className="w-3 h-3 mr-1" />
-              {user.country}
+            <div className="flex items-center text-text-muted text-sm">
+              <MapPinIcon className="w-4 h-4 mr-1 flex-shrink-0" />
+              <span className="truncate">{user.country}</span>
             </div>
           )}
         </div>
-        {user.isOnline && (
-          <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-        )}
-      </div>
-
+      </div>{" "}
       {/* Bio */}
       {user.bio && (
-        <p className="text-dark-300 font-mono text-sm mb-4 line-clamp-2">
+        <p className="text-text-secondary text-sm mb-5 line-clamp-2 leading-relaxed">
           {user.bio}
         </p>
       )}
-
       {/* Skills */}
-      <div className="mb-4">
-        <h4 className="text-dark-200 font-mono font-medium text-sm mb-2">
-          Skills Offered:
-        </h4>
+      <div className="mb-5">
+        <h4 className="text-text-primary font-medium text-sm mb-3">
+          Skills Offered
+        </h4>{" "}
         <div className="flex flex-wrap gap-2">
           {user.skillsOffered?.slice(0, 3).map((skill, index) => (
             <span
               key={index}
-              className="px-2 py-1 bg-accent-500 bg-opacity-20 text-accent-400 rounded-md text-xs font-mono"
+              className="inline-flex items-center px-3 py-1.5 bg-accent-light text-accent-primary rounded-full text-xs font-medium border border-border-accent group-hover:bg-accent-primary group-hover:text-text-inverse transition-all duration-300"
             >
               {skill.skill}
             </span>
           ))}
           {user.skillsOffered?.length > 3 && (
-            <span className="px-2 py-1 bg-dark-600 text-dark-300 rounded-md text-xs font-mono">
+            <span className="inline-flex items-center px-3 py-1.5 bg-bg-tertiary text-text-secondary rounded-full text-xs font-medium group-hover:bg-bg-elevated transition-all duration-300">
               +{user.skillsOffered.length - 3} more
             </span>
           )}
         </div>
       </div>
-
       {/* Stats */}
-      <div className="flex justify-between items-center text-sm">
-        <div className="flex items-center text-dark-400">
-          <StarIcon className="w-4 h-4 mr-1" />
-          <span className="font-mono">
+      <div className="flex justify-between items-center pt-4 border-t border-border-secondary">
+        <div className="flex items-center text-text-muted text-sm">
+          <StarIcon className="w-4 h-4 mr-1.5 text-theme-warning fill-current" />
+          <span className="font-medium text-text-primary">
             {user.rating ? user.rating.toFixed(1) : "New"}
           </span>
-          {user.totalReviews > 0 && (
-            <span className="font-mono ml-1">({user.totalReviews})</span>
-          )}
         </div>
-        <div className="flex items-center text-dark-400">
-          <ClockIcon className="w-4 h-4 mr-1" />
-          <span className="font-mono">
+        <div className="flex items-center text-text-muted text-sm">
+          <ClockIcon className="w-4 h-4 mr-1.5" />
+          <span className="font-medium text-text-primary">
             {user.totalHoursTaught || 0}h taught
           </span>
         </div>

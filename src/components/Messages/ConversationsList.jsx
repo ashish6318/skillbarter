@@ -1,5 +1,6 @@
 import React from "react";
 import { ChatBubbleLeftIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { themeClasses, componentPatterns, cn } from "../../utils/theme";
 
 const ConversationsList = ({
   conversations,
@@ -34,11 +35,21 @@ const ConversationsList = ({
       return messageDate.toLocaleDateString();
     }
   };
-
   if (loading) {
     return (
-      <div className="w-80 bg-card border-r border-dark-600 p-4">
-        <h2 className="text-lg font-mono font-semibold text-dark-50 mb-4">
+      <div
+        className={cn(
+          "w-80 border-r p-4",
+          themeClasses.bgSecondary,
+          themeClasses.borderSecondary
+        )}
+      >
+        <h2
+          className={cn(
+            "text-lg font-mono font-semibold mb-4",
+            themeClasses.textPrimary
+          )}
+        >
           Messages
         </h2>
         <div className="space-y-3">
@@ -47,18 +58,31 @@ const ConversationsList = ({
             .map((_, i) => (
               <div
                 key={i}
-                className="animate-pulse bg-dark-700 rounded-lg h-16"
+                className={cn(
+                  "animate-pulse rounded-lg h-16",
+                  themeClasses.bgTertiary
+                )}
               ></div>
             ))}
         </div>
       </div>
     );
   }
-
   return (
-    <div className="w-80 bg-card border-r border-dark-600 flex flex-col">
-      <div className="p-4 border-b border-dark-600">
-        <h2 className="text-lg font-mono font-semibold text-dark-50">
+    <div
+      className={cn(
+        "w-80 border-r flex flex-col",
+        themeClasses.bgSecondary,
+        themeClasses.borderSecondary
+      )}
+    >
+      <div className={cn("p-4 border-b", themeClasses.borderSecondary)}>
+        <h2
+          className={cn(
+            "text-lg font-mono font-semibold",
+            themeClasses.textPrimary
+          )}
+        >
           Messages
         </h2>
       </div>
@@ -66,13 +90,15 @@ const ConversationsList = ({
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
           <div className="p-4 text-center">
-            <ChatBubbleLeftIcon className="w-12 h-12 text-dark-400 mx-auto mb-3" />
-            <p className="text-dark-400 font-mono text-sm">
+            <ChatBubbleLeftIcon
+              className={cn("w-12 h-12 mx-auto mb-3", themeClasses.textMuted)}
+            />
+            <p className={cn("font-mono text-sm", themeClasses.textMuted)}>
               No conversations yet
             </p>
-            <p className="text-dark-500 font-mono text-xs mt-1">
+            <p className={cn("font-mono text-xs mt-1", themeClasses.textMuted)}>
               Start a conversation from the Discover page
-            </p>
+            </p>{" "}
           </div>
         ) : (
           <div className="p-2">
@@ -80,15 +106,25 @@ const ConversationsList = ({
               <div
                 key={conversation.otherUser._id}
                 onClick={() => onSelectUser(conversation.otherUser)}
-                className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
+                className={cn(
+                  "p-3 rounded-lg cursor-pointer transition-colors mb-2",
                   selectedUserId === conversation.otherUser._id
-                    ? "bg-accent-500 bg-opacity-20 border border-accent-500"
-                    : "hover:bg-dark-700"
-                }`}
+                    ? cn(
+                        "border",
+                        themeClasses.bgSecondary,
+                        themeClasses.borderAccent,
+                        themeClasses.bgTertiary
+                      )
+                    : cn(themeClasses.hover)
+                )}
               >
-                {" "}
                 <div className="flex items-center">
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden bg-dark-700 flex items-center justify-center mr-3">
+                  <div
+                    className={cn(
+                      "relative w-10 h-10 rounded-full overflow-hidden flex items-center justify-center mr-3",
+                      themeClasses.bgTertiary
+                    )}
+                  >
                     {conversation.otherUser.profilePicture ? (
                       <img
                         src={conversation.otherUser.profilePicture}
@@ -99,7 +135,12 @@ const ConversationsList = ({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-sm font-mono font-bold text-dark-300">
+                      <span
+                        className={cn(
+                          "text-sm font-bold",
+                          themeClasses.textSecondary
+                        )}
+                      >
                         {getInitials(
                           conversation.otherUser.firstName,
                           conversation.otherUser.lastName
@@ -108,7 +149,12 @@ const ConversationsList = ({
                     )}
                     {/* Online status indicator */}
                     {onlineUsers.has(conversation.otherUser._id) && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-dark-900 rounded-full"></div>
+                      <div
+                        className={cn(
+                          "absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2",
+                          themeClasses.bgPrimary
+                        )}
+                      ></div>
                     )}
                     {/* Unread messages indicator */}
                     {conversation.unreadCount > 0 && (
@@ -122,18 +168,33 @@ const ConversationsList = ({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
-                      <h3 className="font-mono font-medium text-dark-50 text-sm truncate">
+                      <h3
+                        className={cn(
+                          "font-medium text-sm truncate",
+                          themeClasses.textPrimary
+                        )}
+                      >
                         {getFullName(
                           conversation.otherUser.firstName,
                           conversation.otherUser.lastName
                         )}
                       </h3>
-                      <div className="flex items-center text-dark-400 text-xs">
+                      <div
+                        className={cn(
+                          "flex items-center text-xs",
+                          themeClasses.textMuted
+                        )}
+                      >
                         <ClockIcon className="w-3 h-3 mr-1" />
                         {formatTime(conversation.lastMessage?.createdAt)}
                       </div>
-                    </div>{" "}
-                    <p className="text-dark-300 font-mono text-xs truncate mt-1">
+                    </div>
+                    <p
+                      className={cn(
+                        "text-xs truncate mt-1",
+                        themeClasses.textSecondary
+                      )}
+                    >
                       {conversation.lastMessage?.content || "No messages yet"}
                     </p>
                   </div>

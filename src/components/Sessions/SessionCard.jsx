@@ -2,6 +2,13 @@ import React, { useState } from "react";
 import { format } from "date-fns";
 import SessionReview from "./SessionReview";
 import RescheduleModal from "./RescheduleModal";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  statusClasses,
+  buttonVariants,
+} from "../../utils/theme";
 
 const SessionCard = ({ session, currentUser, onAction }) => {
   const [showReview, setShowReview] = useState(false);
@@ -10,22 +17,26 @@ const SessionCard = ({ session, currentUser, onAction }) => {
 
   const isTeacher = session.teacher._id === currentUser.id;
   const isStudent = session.student._id === currentUser.id;
-
   const getStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "confirmed":
-        return "bg-green-100 text-green-800";
-      case "in_progress":
-        return "bg-blue-100 text-blue-800";
-      case "completed":
-        return "bg-gray-100 text-gray-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+    const statusColorMap = {
+      pending: statusClasses.warningSecondary,
+      confirmed: statusClasses.successSecondary,
+      in_progress: statusClasses.infoSecondary,
+      completed: cn(
+        themeClasses.bgTertiary,
+        themeClasses.textMuted,
+        themeClasses.borderSecondary
+      ),
+      cancelled: statusClasses.errorSecondary,
+    };
+    return (
+      statusColorMap[status] ||
+      cn(
+        themeClasses.bgTertiary,
+        themeClasses.textMuted,
+        themeClasses.borderSecondary
+      )
+    );
   };
 
   const handleAction = async (action, data = {}) => {
@@ -61,39 +72,48 @@ const SessionCard = ({ session, currentUser, onAction }) => {
     if (mins === 0) return `${hours}h`;
     return `${hours}h ${mins}m`;
   };
-
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+    <div className={cn(componentPatterns.card, "p-6")}>
       <div className="flex justify-between items-start mb-4">
         {/* Session Info */}
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-xl font-semibold text-gray-900">
+            <h3
+              className={cn("text-xl font-semibold", themeClasses.textPrimary)}
+            >
               {session.skill}
             </h3>
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                session.status
-              )}`}
+              className={cn(
+                "px-2 py-1 rounded-full text-xs font-medium border",
+                getStatusColor(session.status)
+              )}
             >
-              {" "}
               {(session.status || "unknown").charAt(0).toUpperCase() +
                 (session.status || "unknown").slice(1).replace("_", " ")}
             </span>
           </div>
-
-          <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+          <div
+            className={cn(
+              "flex items-center gap-4 text-sm mb-3",
+              themeClasses.textSecondary
+            )}
+          >
             <span>
               📅 {format(new Date(session.scheduledFor), "MMM dd, yyyy")}
             </span>
             <span>🕐 {format(new Date(session.scheduledFor), "h:mm a")}</span>
             <span>⏱️ {formatDuration(session.duration)}</span>
-          </div>
-
+          </div>{" "}
           {/* Participant Info */}
           <div className="flex items-center gap-4 mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center",
+                  themeClasses.bgTertiary
+                )}
+              >
                 {session.teacher.profilePicture ? (
                   <img
                     src={session.teacher.profilePicture}
@@ -101,23 +121,38 @@ const SessionCard = ({ session, currentUser, onAction }) => {
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <span className="text-sm font-medium text-gray-600">
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      themeClasses.textSecondary
+                    )}
+                  >
                     {session.teacher.name?.charAt(0) || "T"}
                   </span>
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p
+                  className={cn(
+                    "text-sm font-medium",
+                    themeClasses.textPrimary
+                  )}
+                >
                   {session.teacher.name}
                 </p>
-                <p className="text-xs text-gray-500">Teacher</p>
+                <p className={cn("text-xs", themeClasses.textMuted)}>Teacher</p>
               </div>
             </div>
 
-            <span className="text-gray-400">↔</span>
+            <span className={themeClasses.textMuted}>↔</span>
 
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center",
+                  themeClasses.bgTertiary
+                )}
+              >
                 {session.student.profilePicture ? (
                   <img
                     src={session.student.profilePicture}
@@ -125,69 +160,95 @@ const SessionCard = ({ session, currentUser, onAction }) => {
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <span className="text-sm font-medium text-gray-600">
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      themeClasses.textSecondary
+                    )}
+                  >
                     {session.student.name?.charAt(0) || "S"}
                   </span>
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p
+                  className={cn(
+                    "text-sm font-medium",
+                    themeClasses.textPrimary
+                  )}
+                >
                   {session.student.name}
                 </p>
-                <p className="text-xs text-gray-500">Student</p>
+                <p className={cn("text-xs", themeClasses.textMuted)}>Student</p>
               </div>
             </div>
           </div>
-
           {/* Message */}
           {session.message && (
-            <div className="bg-gray-50 rounded-lg p-3 mb-3">
-              <p className="text-sm text-gray-700">"{session.message}"</p>
+            <div className={cn("rounded-lg p-3 mb-3", themeClasses.bgTertiary)}>
+              <p className={cn("text-sm", themeClasses.textSecondary)}>
+                "{session.message}"
+              </p>
             </div>
-          )}
-
+          )}{" "}
           {/* Session Notes */}
           {session.status === "completed" &&
             (session.teacherNotes || session.studentNotes) && (
-              <div className="bg-blue-50 rounded-lg p-3 mb-3">
+              <div
+                className={cn("rounded-lg p-3 mb-3", statusClasses.infoLight)}
+              >
+                {" "}
                 {session.teacherNotes && (
                   <div className="mb-2">
-                    <p className="text-xs font-medium text-blue-900 mb-1">
+                    <p
+                      className={cn(
+                        "text-xs font-medium mb-1",
+                        themeClasses.info
+                      )}
+                    >
                       Teacher Notes:
                     </p>
-                    <p className="text-sm text-blue-800">
+                    <p className={cn("text-sm", themeClasses.textPrimary)}>
                       {session.teacherNotes}
                     </p>
                   </div>
                 )}
                 {session.studentNotes && (
                   <div>
-                    <p className="text-xs font-medium text-blue-900 mb-1">
+                    <p
+                      className={cn(
+                        "text-xs font-medium mb-1",
+                        themeClasses.info
+                      )}
+                    >
                       Student Notes:
                     </p>
-                    <p className="text-sm text-blue-800">
+                    <p className={cn("text-sm", themeClasses.textPrimary)}>
                       {session.studentNotes}
                     </p>
                   </div>
                 )}
               </div>
-            )}
-
+            )}{" "}
           {/* Review */}
           {session.review?.rating && (
-            <div className="bg-green-50 rounded-lg p-3 mb-3">
+            <div
+              className={cn("rounded-lg p-3 mb-3", statusClasses.successLight)}
+            >
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-green-900">
+                <span
+                  className={cn("text-sm font-medium", themeClasses.success)}
+                >
                   Review:
                 </span>
-                <div className="flex text-yellow-400">
+                <div className="flex text-theme-warning">
                   {[...Array(5)].map((_, i) => (
                     <span key={i}>{i < session.review.rating ? "★" : "☆"}</span>
                   ))}
                 </div>
               </div>
               {session.review.feedback && (
-                <p className="text-sm text-green-800">
+                <p className={cn("text-sm", themeClasses.success)}>
                   {session.review.feedback}
                 </p>
               )}
@@ -225,15 +286,6 @@ const SessionCard = ({ session, currentUser, onAction }) => {
           {/* Confirmed Status Actions */}
           {session.status === "confirmed" && (
             <div className="flex flex-col gap-2">
-              {canStart() && (
-                <button
-                  onClick={() => handleAction("start")}
-                  disabled={loading}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                >
-                  Start Session
-                </button>
-              )}{" "}
               <button
                 onClick={() => setShowReschedule(true)}
                 disabled={loading}
@@ -280,25 +332,38 @@ const SessionCard = ({ session, currentUser, onAction }) => {
             >
               End Session
             </button>
+          )}{" "}
+          {/* Room Access - Show join button for both confirmed and in-progress sessions */}
+          {session.status === "confirmed" && canStart() && (
+            <button
+              onClick={() => handleAction("start")}
+              disabled={loading}
+              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+            >
+              🚀 Start Session
+            </button>
+          )}{" "}
+          {/* Video Call Access - Show when session is in progress */}
+          {session.status === "in_progress" && (
+            <button
+              onClick={() => {
+                // Navigate to video call component
+                window.open(
+                  `/session/${session._id}/room`,
+                  "_blank",
+                  "width=1200,height=800"
+                );
+              }}
+              className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+            >
+              🎥 Join Video Call
+            </button>
           )}
-          {/* Room Access */}
-          {(session.status === "in_progress" ||
-            session.status === "confirmed") &&
-            session.meetingUrl && (
-              <a
-                href={session.meetingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm text-center"
-              >
-                Join Room
-              </a>
-            )}
           {/* Review Action */}
           {canReview() && (
             <button
               onClick={() => setShowReview(true)}
-              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm"
+              className={cn(buttonVariants.warning, "text-sm")}
             >
               Write Review
             </button>

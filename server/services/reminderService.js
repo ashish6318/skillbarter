@@ -1,6 +1,7 @@
 const Session = require('../models/Session');
 const User = require('../models/User');
 const cron = require('node-cron');
+const EmailService = require('./EmailService');
 
 class ReminderService {
   constructor(io) {
@@ -65,11 +66,13 @@ class ReminderService {
           await this.sendReminder(session, '1h', 'in 1 hour');
         }
       }
-      
-      // 15-minute reminder
+        // 15-minute reminder
       if (timeDiff <= fifteenMinutes && timeDiff > 0) {
         if (!sentReminders.some(r => r.type === '15min')) {
           await this.sendReminder(session, '15min', 'in 15 minutes');
+          
+          // Also send session join ready notification
+          await this.sendSessionJoinReadyNotification(session);
         }
       }
     } catch (error) {
@@ -115,17 +118,59 @@ class ReminderService {
             sentAt: new Date()
           }
         }
-      });
-
-      console.log(`📬 Sent ${reminderType} reminder for session ${session._id} (${session.skill})`);
+      });      console.log(`📬 Sent ${reminderType} reminder for session ${session._id} (${session.skill})`);
       
-      // In a production environment, you would also send:
-      // - Email notifications
-      // - Push notifications
-      // - SMS reminders (optional)
-      
-    } catch (error) {
+      // Send email notifications
+      try {
+        const minutesUntil = reminderType === '24h' ? 1440 : (reminderType === '1h' ? 60 : 15);
+        
+        // Send email to teacher
+        if (session.teacher && session.teacher.email) {
+          await EmailService.sendSessionReminder(
+            { email: session.teacher.email, name: session.teacher.name }, 
+            { ...session, role: 'teacher', otherParticipant: session.student }, 
+            minutesUntil
+          );
+          console.log(`Email reminder sent to teacher: ${session.teacher.email}`);
+        }
+        
+        // Send email to student
+        if (session.student && session.student.email) {
+          await EmailService.sendSessionReminder(
+            { email: session.student.email, name: session.student.name }, 
+            { ...session, role: 'student', otherParticipant: session.teacher }, 
+            minutesUntil
+          );
+          console.log(`Email reminder sent to student: ${session.student.email}`);
+        }
+      } catch (emailError) {
+        console.error(`Failed to send email reminders for session ${session._id}:`, emailError);
+        // Don't fail the reminder if email fails
+      }
+        } catch (error) {
       console.error(`Error sending ${reminderType} reminder:`, error);
+    }
+  }
+
+  // Send session join ready notification (for video call preparation)
+  async sendSessionJoinReadyNotification(session) {
+    try {
+      if (this.io) {
+        const joinReadyData = {
+          sessionId: session._id,
+          skill: session.skill,
+          scheduledFor: session.scheduledFor,
+          duration: session.duration
+        };
+
+        // Emit to both participants
+        this.io.to(`user:${session.teacher._id}`).emit('sessionJoinReady', joinReadyData);
+        this.io.to(`user:${session.student._id}`).emit('sessionJoinReady', joinReadyData);
+        
+        console.log(`🎥 Sent session join ready notification for session ${session._id} (${session.skill})`);
+      }
+    } catch (error) {
+      console.error('Error sending session join ready notification:', error);
     }
   }
 

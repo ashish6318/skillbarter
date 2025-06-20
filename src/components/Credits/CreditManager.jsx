@@ -7,12 +7,19 @@ import {
   ChartBarIcon,
   GiftIcon,
   ArrowsRightLeftIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { creditsAPI } from "../../utils/api";
 import LoadingSpinner from "../Common/LoadingSpinner";
 import toast from "react-hot-toast";
 import NotificationService from "../../services/NotificationService";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  buttonVariants,
+} from "../../utils/theme";
 
 const CreditManager = () => {
   const [balance, setBalance] = useState(0);
@@ -21,9 +28,41 @@ const CreditManager = () => {
   const [loading, setLoading] = useState(true);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
   useEffect(() => {
     fetchCreditData();
-  }, []);
+
+    // Set up polling to refresh data every 30 seconds
+    const intervalId = setInterval(() => {
+      console.log("Auto-refreshing credit data...");
+      fetchCreditData();
+    }, 30000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
+  }, []); // Debug function to test API calls
+  const testAPI = async () => {
+    try {
+      console.log("Testing API calls...");
+
+      // Test balance endpoint
+      const balanceTest = await creditsAPI.getBalance();
+      console.log("Balance API response:", balanceTest);
+
+      // Test transactions endpoint
+      const transactionsTest = await creditsAPI.getTransactions();
+      console.log("Transactions API response:", transactionsTest);
+
+      // Test stats endpoint
+      const statsTest = await creditsAPI.getStats();
+      console.log("Stats API response:", statsTest);
+
+      toast.success("API test completed - check console for details");
+    } catch (error) {
+      console.error("API test failed:", error);
+      toast.error(`API test failed: ${error.message}`);
+    }
+  };
 
   // Check for low credits warning
   useEffect(() => {
@@ -33,15 +72,23 @@ const CreditManager = () => {
   }, [balance]);
   const fetchCreditData = async () => {
     try {
+      setLoading(true);
       const [balanceRes, transactionsRes, statsRes] = await Promise.all([
         creditsAPI.getBalance(),
         creditsAPI.getTransactions({ limit: 20 }),
         creditsAPI.getStats(),
       ]);
 
+      console.log("Credit data fetched:", {
+        balance: balanceRes.data.balance,
+        transactions: transactionsRes.data.transactions?.length,
+        stats: statsRes.data.stats,
+      });
+
       setBalance(balanceRes.data.balance);
       setTransactions(transactionsRes.data.transactions || []);
       setStats(statsRes.data.stats || {});
+      setLastUpdated(new Date());
     } catch (error) {
       console.error("Error fetching credit data:", error);
 
@@ -54,21 +101,28 @@ const CreditManager = () => {
       setLoading(false);
     }
   };
-
   const getTransactionIcon = (type) => {
     switch (type) {
       case "purchase":
       case "bonus":
       case "refund":
-        return <ArrowDownIcon className="w-5 h-5 text-green-500" />;
+        return (
+          <ArrowDownIcon className={cn("w-5 h-5", themeClasses.success)} />
+        );
       case "session_booking":
       case "session_completion":
       case "transfer_out":
-        return <ArrowUpIcon className="w-5 h-5 text-red-500" />;
+        return <ArrowUpIcon className={cn("w-5 h-5", themeClasses.error)} />;
       case "transfer_in":
-        return <ArrowsRightLeftIcon className="w-5 h-5 text-blue-500" />;
+        return (
+          <ArrowsRightLeftIcon
+            className={cn("w-5 h-5", themeClasses.textAccent)}
+          />
+        );
       default:
-        return <CreditCardIcon className="w-5 h-5 text-gray-500" />;
+        return (
+          <CreditCardIcon className={cn("w-5 h-5", themeClasses.textMuted)} />
+        );
     }
   };
 
@@ -78,14 +132,14 @@ const CreditManager = () => {
       case "bonus":
       case "refund":
       case "transfer_in":
-        return "text-green-600";
+        return themeClasses.success;
       case "session_booking":
       case "transfer_out":
-        return "text-red-600";
+        return themeClasses.error;
       case "session_completion":
-        return "text-blue-600";
+        return themeClasses.textAccent;
       default:
-        return "text-gray-600";
+        return themeClasses.textMuted;
     }
   };
   const PurchaseModal = () => {
@@ -100,6 +154,8 @@ const CreditManager = () => {
     const handlePurchase = async (packageData) => {
       setPurchasing(true);
       try {
+        console.log("Purchasing credits:", packageData);
+
         // Mock payment processing for demo
         const mockPaymentData = {
           amount: packageData.credits + packageData.bonus,
@@ -108,8 +164,23 @@ const CreditManager = () => {
         };
 
         const response = await creditsAPI.purchaseCredits(mockPaymentData);
+        console.log("Purchase response:", response.data);
+
         if (response.data.success) {
-          await fetchCreditData(); // Refresh data
+          // Update local state immediately for better UX
+          setBalance(
+            (prevBalance) =>
+              prevBalance + (packageData.credits + packageData.bonus)
+          );
+
+          // Refresh all data from server
+          await fetchCreditData();
+
+          toast.success(
+            `Successfully purchased ${
+              packageData.credits + packageData.bonus
+            } credits!`
+          );
           NotificationService.creditPurchased(
             packageData.credits + packageData.bonus
           );
@@ -124,15 +195,29 @@ const CreditManager = () => {
         setPurchasing(false);
       }
     };
-
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+      <div
+        className={cn(
+          "fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50",
+          "bg-black/50"
+        )}
+      >
+        <div
+          className={cn(componentPatterns.modal, "w-full max-w-md mx-4 p-6")}
+        >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Purchase Credits</h3>
+            <h3
+              className={cn("text-lg font-semibold", themeClasses.textPrimary)}
+            >
+              Purchase Credits
+            </h3>
             <button
               onClick={() => setShowPurchaseModal(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className={cn(
+                "transition-colors",
+                themeClasses.textMuted,
+                themeClasses.hover
+              )}
             >
               ×
             </button>
@@ -142,24 +227,40 @@ const CreditManager = () => {
             {creditPackages.map((pkg, index) => (
               <div
                 key={index}
-                className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
+                className={cn(
+                  "border rounded-lg p-4 cursor-pointer transition-colors",
+                  themeClasses.borderSecondary,
+                  themeClasses.hover
+                )}
                 onClick={() => handlePurchase(pkg)}
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <div className="font-medium">
+                    <div
+                      className={cn("font-medium", themeClasses.textPrimary)}
+                    >
+                      {" "}
                       {pkg.credits} Credits
                       {pkg.bonus > 0 && (
-                        <span className="text-green-600 text-sm ml-2">
+                        <span
+                          className={cn("text-sm ml-2", themeClasses.success)}
+                        >
                           +{pkg.bonus} bonus
                         </span>
                       )}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className={cn("text-sm", themeClasses.textMuted)}>
                       Total: {pkg.credits + pkg.bonus} credits
                     </div>
                   </div>
-                  <div className="text-lg font-semibold">${pkg.price}</div>
+                  <div
+                    className={cn(
+                      "text-lg font-semibold",
+                      themeClasses.textPrimary
+                    )}
+                  >
+                    ${pkg.price}
+                  </div>
                 </div>
               </div>
             ))}
@@ -168,7 +269,9 @@ const CreditManager = () => {
           {purchasing && (
             <div className="mt-4 flex items-center justify-center">
               <LoadingSpinner />
-              <span className="ml-2">Processing payment...</span>
+              <span className={cn("ml-2", themeClasses.textPrimary)}>
+                Processing payment...
+              </span>
             </div>
           )}
         </div>
@@ -181,7 +284,6 @@ const CreditManager = () => {
     const [amount, setAmount] = useState("");
     const [message, setMessage] = useState("");
     const [transferring, setTransferring] = useState(false);
-
     const handleTransfer = async (e) => {
       e.preventDefault();
       if (!recipient || !amount || parseInt(amount) <= 0) {
@@ -193,8 +295,11 @@ const CreditManager = () => {
         toast.error("Insufficient credits");
         return;
       }
+
       setTransferring(true);
       try {
+        console.log("Transferring credits:", { recipient, amount });
+
         const transferData = {
           toUserId: recipient, // In real app, this would be resolved from username/email
           amount: parseInt(amount),
@@ -202,8 +307,18 @@ const CreditManager = () => {
         };
 
         const response = await creditsAPI.transferCredits(transferData);
+        console.log("Transfer response:", response.data);
+
         if (response.data.success) {
-          await fetchCreditData(); // Refresh data
+          // Update local state immediately for better UX
+          setBalance((prevBalance) => prevBalance - parseInt(amount));
+
+          // Refresh all data from server
+          await fetchCreditData();
+
+          toast.success(
+            `Successfully transferred ${amount} credits to ${recipient}!`
+          );
           NotificationService.creditTransferred(parseInt(amount), recipient);
           setShowTransferModal(false);
           setRecipient("");
@@ -219,15 +334,27 @@ const CreditManager = () => {
         setTransferring(false);
       }
     };
-
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <div
+          className={cn(
+            "rounded-lg p-6 w-full max-w-md mx-4",
+            componentPatterns.card
+          )}
+        >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Transfer Credits</h3>
+            <h3
+              className={cn("text-lg font-semibold", themeClasses.textPrimary)}
+            >
+              Transfer Credits
+            </h3>
             <button
               onClick={() => setShowTransferModal(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className={cn(
+                "transition-colors",
+                themeClasses.textMuted,
+                "hover:text-text-primary"
+              )}
             >
               ×
             </button>
@@ -235,21 +362,31 @@ const CreditManager = () => {
 
           <form onSubmit={handleTransfer} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                className={cn(
+                  "block text-sm font-medium mb-1",
+                  themeClasses.textPrimary
+                )}
+              >
                 Recipient Username/Email
               </label>
               <input
                 type="text"
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={cn(componentPatterns.input, "w-full")}
                 placeholder="Enter username or email"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                className={cn(
+                  "block text-sm font-medium mb-1",
+                  themeClasses.textPrimary
+                )}
+              >
                 Amount
               </label>
               <input
@@ -258,23 +395,28 @@ const CreditManager = () => {
                 max={balance}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={cn(componentPatterns.input, "w-full")}
                 placeholder="Credits to transfer"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className={cn("text-xs mt-1", themeClasses.textMuted)}>
                 Available: {balance} credits
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                className={cn(
+                  "block text-sm font-medium mb-1",
+                  themeClasses.textPrimary
+                )}
+              >
                 Message (Optional)
               </label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                className={cn(componentPatterns.input, "w-full resize-none")}
                 rows={2}
                 placeholder="Add a message..."
               />
@@ -284,7 +426,11 @@ const CreditManager = () => {
               <button
                 type="button"
                 onClick={() => setShowTransferModal(false)}
-                className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className={cn(
+                  buttonVariants.secondary,
+                  "flex-1",
+                  "disabled:opacity-50"
+                )}
                 disabled={transferring}
               >
                 Cancel
@@ -292,7 +438,11 @@ const CreditManager = () => {
               <button
                 type="submit"
                 disabled={transferring || !recipient || !amount}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className={cn(
+                  buttonVariants.primary,
+                  "flex-1",
+                  "disabled:opacity-50"
+                )}
               >
                 {transferring ? "Transferring..." : "Transfer"}
               </button>
@@ -302,117 +452,192 @@ const CreditManager = () => {
       </div>
     );
   };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div
+        className={cn(
+          "min-h-screen flex items-center justify-center",
+          themeClasses.bgPrimary
+        )}
+      >
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={cn("min-h-screen", themeClasses.bgPrimary)}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {" "}
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Credit Management
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Manage your credits for skill exchange sessions
-          </p>
-        </div>
-
+          <div className="flex items-center justify-between">
+            {" "}
+            <div>
+              <h1
+                className={cn("text-3xl font-bold", themeClasses.textPrimary)}
+              >
+                Credit Management
+              </h1>
+              <p className={cn("mt-2", themeClasses.textSecondary)}>
+                Manage your credits for skill exchange sessions
+              </p>
+              {lastUpdated && (
+                <p className={cn("text-xs mt-1", themeClasses.textMuted)}>
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </p>
+              )}
+            </div>{" "}
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={fetchCreditData}
+                disabled={loading}
+                className={cn(
+                  buttonVariants.secondary,
+                  "flex items-center space-x-2",
+                  loading && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                <ArrowPathIcon className="w-4 h-4" />
+                <span>{loading ? "Refreshing..." : "Refresh"}</span>
+              </button>
+              <button
+                onClick={testAPI}
+                className={cn(
+                  buttonVariants.secondary,
+                  "flex items-center space-x-2"
+                )}
+              >
+                <span>Test API</span>
+              </button>
+            </div>
+          </div>
+        </div>{" "}
         {/* Balance Card */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg p-8 text-white mb-8">
+        <div
+          className={cn(
+            "rounded-lg p-8 text-white mb-8",
+            themeClasses.gradientAccent
+          )}
+        >
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold mb-2">Current Balance</h2>
               <div className="text-4xl font-bold">{balance}</div>
-              <p className="text-blue-100 mt-1">Credits Available</p>
+              <p className="text-white/80 mt-1">Credits Available</p>
             </div>
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => setShowPurchaseModal(true)}
-                className="flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 font-medium"
+                className={cn(
+                  "flex items-center px-4 py-2 rounded-lg font-medium transition-colors",
+                  "bg-white text-accent-primary hover:bg-white/90"
+                )}
               >
                 <PlusIcon className="w-5 h-5 mr-2" />
                 Buy Credits
-              </button>{" "}
+              </button>
               <button
                 onClick={() => setShowTransferModal(true)}
-                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 font-medium"
+                className={cn(
+                  "flex items-center px-4 py-2 rounded-lg font-medium transition-colors",
+                  "bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm"
+                )}
               >
                 <ArrowsRightLeftIcon className="w-5 h-5 mr-2" />
                 Transfer
               </button>
             </div>
           </div>
-        </div>
-
+        </div>{" "}
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <ArrowDownIcon className="w-6 h-6 text-green-600" />
+          <div className={componentPatterns.card}>
+            <div className="flex items-center p-6">
+              <div className={cn("p-2 rounded-lg", themeClasses.successLight)}>
+                <ArrowDownIcon
+                  className={cn("w-6 h-6", themeClasses.success)}
+                />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+                <p
+                  className={cn(
+                    "text-sm font-medium",
+                    themeClasses.textSecondary
+                  )}
+                >
                   Credits Earned
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p
+                  className={cn("text-2xl font-bold", themeClasses.textPrimary)}
+                >
                   {stats.totalEarned || 0}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <ArrowUpIcon className="w-6 h-6 text-blue-600" />
+          <div className={componentPatterns.card}>
+            <div className="flex items-center p-6">
+              <div className={cn("p-2 rounded-lg", "bg-accent-light")}>
+                <ArrowUpIcon
+                  className={cn("w-6 h-6", themeClasses.textAccent)}
+                />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+                <p
+                  className={cn(
+                    "text-sm font-medium",
+                    themeClasses.textSecondary
+                  )}
+                >
                   Credits Spent
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p
+                  className={cn("text-2xl font-bold", themeClasses.textPrimary)}
+                >
                   {stats.totalSpent || 0}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <ChartBarIcon className="w-6 h-6 text-purple-600" />
+          <div className={componentPatterns.card}>
+            <div className="flex items-center p-6">
+              <div className={cn("p-2 rounded-lg", themeClasses.infoLight)}>
+                <ChartBarIcon className={cn("w-6 h-6", themeClasses.info)} />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+                <p
+                  className={cn(
+                    "text-sm font-medium",
+                    themeClasses.textSecondary
+                  )}
+                >
                   Sessions This Month
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p
+                  className={cn("text-2xl font-bold", themeClasses.textPrimary)}
+                >
                   {stats.monthlyeSessions || 0}
                 </p>
               </div>
             </div>
           </div>
-        </div>
-
+        </div>{" "}
         {/* Recent Transactions */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">
+        <div className={componentPatterns.card}>
+          <div
+            className={cn("px-6 py-4 border-b", themeClasses.borderSecondary)}
+          >
+            <h3 className={cn("text-lg font-medium", themeClasses.textPrimary)}>
               Recent Transactions
             </h3>
           </div>
 
-          <div className="divide-y divide-gray-200">
+          <div className={cn("divide-y", themeClasses.borderSecondary)}>
             {transactions.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
+              <div className={cn("p-6 text-center", themeClasses.textMuted)}>
                 No transactions yet
               </div>
             ) : (
@@ -426,10 +651,15 @@ const CreditManager = () => {
                       {getTransactionIcon(transaction.type)}
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p
+                        className={cn(
+                          "text-sm font-medium",
+                          themeClasses.textPrimary
+                        )}
+                      >
                         {transaction.description}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className={cn("text-sm", themeClasses.textSecondary)}>
                         {format(
                           new Date(transaction.createdAt),
                           "MMM dd, yyyy • h:mm a"
@@ -438,9 +668,10 @@ const CreditManager = () => {
                     </div>
                   </div>
                   <div
-                    className={`text-sm font-medium ${getTransactionColor(
-                      transaction.type
-                    )}`}
+                    className={cn(
+                      "text-sm font-medium",
+                      getTransactionColor(transaction.type)
+                    )}
                   >
                     {transaction.amount > 0 ? "+" : ""}
                     {transaction.amount}

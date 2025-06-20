@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import { XMarkIcon, PhotoIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  buttonVariants,
+} from "../../utils/theme";
 
 const ProfileEditModal = ({ user, isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -74,28 +80,55 @@ const ProfileEditModal = ({ user, isOpen, onClose, onSave }) => {
   };
 
   if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-dark-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div
+      className={cn(
+        "fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4",
+        "bg-black/50"
+      )}
+    >
+      <div
+        className={cn(
+          componentPatterns.modal,
+          "w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        )}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-dark-600">
-          <h2 className="text-2xl font-mono font-bold text-dark-50">
+        <div
+          className={cn(
+            "flex items-center justify-between p-6 border-b",
+            themeClasses.borderSecondary
+          )}
+        >
+          <h2
+            className={cn(
+              "text-2xl font-mono font-bold",
+              themeClasses.textPrimary
+            )}
+          >
             Edit Profile
           </h2>
           <button
             onClick={handleCancel}
-            className="p-2 hover:bg-dark-700 rounded-lg transition-colors"
+            className={cn(
+              "p-2 rounded-lg transition-colors",
+              themeClasses.hover
+            )}
           >
-            <XMarkIcon className="w-5 h-5 text-dark-300" />
+            <XMarkIcon className={cn("w-5 h-5", themeClasses.textMuted)} />
           </button>
-        </div>
-
+        </div>{" "}
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {errors.general && (
-            <div className="p-4 bg-error-500 bg-opacity-10 border border-error-500 rounded-lg">
-              <p className="text-error-500 font-mono text-sm">
+            <div
+              className={cn(
+                "p-4 border rounded-lg",
+                themeClasses.errorLight,
+                "border-theme-error"
+              )}
+            >
+              <p className={cn("font-mono text-sm", themeClasses.error)}>
                 {errors.general}
               </p>
             </div>
@@ -108,10 +141,17 @@ const ProfileEditModal = ({ user, isOpen, onClose, onSave }) => {
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-dark-700 rounded-full flex items-center justify-center">
                 <PhotoIcon className="w-8 h-8 text-dark-400" />
-              </div>
+              </div>{" "}
               <button
                 type="button"
-                className="px-4 py-2 bg-dark-700 hover:bg-dark-600 text-dark-100 rounded-lg transition-colors border border-dark-600 hover:border-accent-400 font-mono text-sm"
+                className={cn(
+                  "px-4 py-2 rounded-lg transition-colors border text-sm",
+                  themeClasses.bgSecondary,
+                  themeClasses.textPrimary,
+                  themeClasses.borderPrimary,
+                  themeClasses.hover,
+                  "hover:border-border-accent"
+                )}
               >
                 Change Photo
               </button>
@@ -243,7 +283,6 @@ const ProfileEditModal = ({ user, isOpen, onClose, onSave }) => {
             </p>
           </div>
         </form>
-
         {/* Footer */}
         <div className="flex justify-end gap-3 p-6 border-t border-dark-600">
           <button
@@ -252,11 +291,14 @@ const ProfileEditModal = ({ user, isOpen, onClose, onSave }) => {
             className="px-4 py-2 text-dark-300 hover:text-dark-100 transition-colors font-mono text-sm"
           >
             Cancel
-          </button>
+          </button>{" "}
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-6 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-400 hover:to-accent-500 text-white rounded-lg transition-all font-mono text-sm disabled:opacity-50"
+            className={cn(
+              buttonVariants.primary,
+              "px-6 py-2 text-sm disabled:opacity-50"
+            )}
           >
             {loading ? "Saving..." : "Save Changes"}
           </button>

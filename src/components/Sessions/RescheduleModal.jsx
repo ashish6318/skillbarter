@@ -5,6 +5,12 @@ import {
   ClockIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import {
+  themeClasses,
+  componentPatterns,
+  cn,
+  buttonVariants,
+} from "../../utils/theme";
 
 const RescheduleModal = ({ session, isOpen, onClose, onSubmit }) => {
   const [newDateTime, setNewDateTime] = useState("");
@@ -46,31 +52,51 @@ const RescheduleModal = ({ session, isOpen, onClose, onSubmit }) => {
   const formatCurrentDateTime = () => {
     return format(new Date(session.scheduledFor), "MMM dd, yyyy 'at' h:mm a");
   };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+    <div
+      className={cn(
+        "fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50",
+        "bg-black/50"
+      )}
+    >
+      <div className={cn(componentPatterns.modal, "w-full max-w-md mx-4 p-6")}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className={cn("text-lg font-semibold", themeClasses.textPrimary)}>
             Reschedule Session
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className={cn(
+              "transition-colors",
+              themeClasses.textMuted,
+              "hover:text-text-primary"
+            )}
           >
             <XMarkIcon className="w-6 h-6" />
           </button>
         </div>
 
         <div className="mb-4">
-          <h4 className="text-md font-medium text-gray-800 mb-2">
+          <h4
+            className={cn("text-md font-medium mb-2", themeClasses.textPrimary)}
+          >
             {session.skill}
           </h4>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+          <div
+            className={cn(
+              "flex items-center gap-2 text-sm mb-2",
+              themeClasses.textSecondary
+            )}
+          >
             <CalendarIcon className="w-4 h-4" />
             <span>Current: {formatCurrentDateTime()}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          </div>{" "}
+          <div
+            className={cn(
+              "flex items-center gap-2 text-sm",
+              themeClasses.textSecondary
+            )}
+          >
             <ClockIcon className="w-4 h-4" />
             <span>Duration: {session.duration} minutes</span>
           </div>
@@ -78,7 +104,12 @@ const RescheduleModal = ({ session, isOpen, onClose, onSubmit }) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className={cn(
+                "block text-sm font-medium mb-2",
+                themeClasses.textPrimary
+              )}
+            >
               New Date & Time *
             </label>
             <input
@@ -88,20 +119,25 @@ const RescheduleModal = ({ session, isOpen, onClose, onSubmit }) => {
               min={new Date(Date.now() + 60 * 60 * 1000)
                 .toISOString()
                 .slice(0, 16)} // At least 1 hour from now
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={cn(componentPatterns.input)}
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className={cn(
+                "block text-sm font-medium mb-2",
+                themeClasses.textPrimary
+              )}
+            >
               Reason (Optional)
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Why are you rescheduling this session?"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className={cn(componentPatterns.input, "resize-none")}
               rows={3}
             />
           </div>
@@ -110,7 +146,11 @@ const RescheduleModal = ({ session, isOpen, onClose, onSubmit }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className={cn(
+                buttonVariants.secondary,
+                "flex-1",
+                loading && "opacity-50 cursor-not-allowed"
+              )}
               disabled={loading}
             >
               Cancel
@@ -118,7 +158,11 @@ const RescheduleModal = ({ session, isOpen, onClose, onSubmit }) => {
             <button
               type="submit"
               disabled={loading || !newDateTime}
-              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={cn(
+                buttonVariants.primary,
+                "flex-1",
+                (loading || !newDateTime) && "opacity-50 cursor-not-allowed"
+              )}
             >
               {loading ? "Rescheduling..." : "Reschedule"}
             </button>

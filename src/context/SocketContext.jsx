@@ -92,14 +92,97 @@ export const SocketProvider = ({ children }) => {
           updated.delete(userId);
           return updated;
         });
-      });
-
-      // Session reminder events
+      }); // Session reminder events
       newSocket.on("session:reminder", (reminderData) => {
         console.log("⏰ Session reminder received:", reminderData);
         // Call global reminder handler if available
         if (window.addSessionReminder) {
           window.addSessionReminder(reminderData);
+        }
+      });
+
+      // Session notification events
+      newSocket.on("sessionRequest", (requestData) => {
+        console.log("📋 Session request received:", requestData);
+        if (window.addSessionNotification) {
+          window.addSessionNotification({
+            type: "session_request",
+            sessionId: requestData.sessionId,
+            student: requestData.student,
+            skill: requestData.skill,
+            scheduledFor: requestData.scheduledFor,
+            duration: requestData.duration,
+            message: requestData.message,
+          });
+        }
+      });
+      newSocket.on("sessionStatusUpdate", (statusData) => {
+        console.log("📊 Session status update received:", statusData);
+        if (window.addSessionNotification) {
+          let notificationType = "session_update";
+
+          switch (statusData.status) {
+            case "confirmed":
+              notificationType = "session_confirmed";
+              break;
+            case "cancelled":
+              notificationType = "session_cancelled";
+              break;
+            case "rejected":
+              notificationType = "session_cancelled";
+              break;
+          }
+
+          window.addSessionNotification({
+            type: notificationType,
+            sessionId: statusData.sessionId,
+            skill: statusData.skill,
+            scheduledFor: statusData.scheduledFor,
+            reason: statusData.reason,
+          });
+        }
+      });
+
+      // Specific notification for session acceptance
+      newSocket.on("sessionAccepted", (acceptData) => {
+        console.log("✅ Session accepted notification:", acceptData);
+        if (window.addSessionNotification) {
+          window.addSessionNotification({
+            type: "session_accepted",
+            sessionId: acceptData.sessionId,
+            skill: acceptData.skill,
+            teacherName: acceptData.teacherName,
+            scheduledFor: acceptData.scheduledFor,
+            duration: acceptData.duration,
+            creditsDeducted: acceptData.creditsDeducted,
+          });
+        }
+      });
+
+      newSocket.on("creditDeduction", (creditData) => {
+        console.log("💳 Credit deduction notification:", creditData);
+        if (window.addSessionNotification) {
+          window.addSessionNotification({
+            type: "credit_deduction",
+            sessionId: creditData.sessionId,
+            skill: creditData.skill,
+            creditsDeducted: creditData.creditsDeducted,
+            remainingCredits: creditData.remainingCredits,
+            scheduledFor: creditData.scheduledFor,
+          });
+        }
+      });
+
+      newSocket.on("sessionJoinReady", (joinData) => {
+        console.log("🎥 Session join ready notification:", joinData);
+        if (window.addSessionNotification) {
+          window.addSessionNotification({
+            type: "session_join_ready",
+            sessionId: joinData.sessionId,
+            skill: joinData.skill,
+            scheduledFor: joinData.scheduledFor,
+            duration: joinData.duration,
+          });
         }
       });
 
