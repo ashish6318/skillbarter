@@ -74,23 +74,23 @@ const Navbar = () => {
       role="navigation"
       aria-label="Main navigation"
     >
+      {" "}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo and brand */}
-          <div className="flex items-center">
-            {" "}
+        <div className="flex justify-between items-center h-16">
+          {/* Logo and brand - More space and better alignment */}
+          <div className="flex items-center min-w-0 flex-1 lg:flex-none">
             <Link
               to="/"
-              className="flex items-center space-x-3 group"
+              className="flex items-center space-x-4 group"
               aria-label="SkillBarter home"
             >
               <div
                 className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center relative overflow-hidden",
+                  "w-10 h-10 rounded-xl flex items-center justify-center",
                   "bg-gradient-to-br from-accent-primary to-accent-hover",
                   themeClasses.shadowMd,
-                  themeClasses.transitionTransform,
-                  "group-hover:scale-105 group-hover:rotate-3"
+                  "transition-all duration-200",
+                  "active:scale-95 active:shadow-sm"
                 )}
               >
                 <span
@@ -101,77 +101,74 @@ const Navbar = () => {
                 >
                   SB
                 </span>
-                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col justify-center">
                 <span
                   className={cn(
-                    "text-xl font-mono font-bold transition-all duration-300",
-                    "group-hover:text-accent-primary",
+                    "text-xl font-mono font-bold leading-tight",
                     themeClasses.textPrimary
                   )}
                 >
                   SkillBarter
                 </span>
                 <span
-                  className={cn("text-xs font-mono", themeClasses.textMuted)}
+                  className={cn(
+                    "text-xs font-mono leading-none",
+                    themeClasses.textMuted
+                  )}
                 >
-                  Learn & Share
+                  by Ashish Rajput
                 </span>
               </div>
             </Link>
-          </div>
-
-          {/* Desktop Navigation */}
+          </div>{" "}
+          {/* Desktop Navigation - Centered with better spacing */}
           {isAuthenticated && (
-            <div className="hidden lg:flex items-center space-x-1">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = isActiveRoute(item.href);
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={cn(
-                      "relative flex items-center px-4 py-2 rounded-xl text-sm font-mono font-medium group",
-                      themeClasses.transition,
-                      isActive
-                        ? cn(
-                            themeClasses.gradientAccent,
-                            themeClasses.textInverse,
-                            themeClasses.shadowMd,
-                            "scale-105"
-                          )
-                        : cn(
-                            themeClasses.textSecondary,
-                            themeClasses.hover,
-                            "hover:scale-105 hover:text-text-primary"
-                          )
-                    )}
-                    aria-current={isActive ? "page" : undefined}
-                  >
-                    <Icon
+            <div className="hidden lg:flex items-center justify-center flex-1 px-8">
+              <div className="flex items-center space-x-2">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = isActiveRoute(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
                       className={cn(
-                        "w-4 h-4 mr-2 transition-transform group-hover:scale-110"
+                        "relative flex items-center px-4 py-2 rounded-xl text-sm font-mono font-medium",
+                        "transition-all duration-200",
+                        isActive
+                          ? cn(
+                              themeClasses.gradientAccent,
+                              themeClasses.textInverse,
+                              themeClasses.shadowMd
+                            )
+                          : cn(
+                              themeClasses.textSecondary,
+                              themeClasses.hover,
+                              "hover:text-text-primary",
+                              "active:scale-95"
+                            )
                       )}
-                    />
-                    {item.name}
-                    {isActive && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full" />
-                    )}
-                  </Link>
-                );
-              })}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      <Icon className="w-4 h-4 mr-2" />
+                      {item.name}
+                      {isActive && (
+                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full" />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          )}
-
-          {/* Right side - User menu */}
-          <div className="flex items-center space-x-4">
+          )}{" "}
+          {/* Right side - User menu with better alignment */}
+          <div className="flex items-center space-x-3 flex-shrink-0">
             {/* Connection status indicator */}
             {isAuthenticated && (
               <div
                 className={cn(
-                  "flex items-center space-x-2 px-3 py-1 rounded-full",
+                  "hidden md:flex items-center space-x-2 px-3 py-1 rounded-full",
                   themeClasses.bgTertiary
                 )}
               >
@@ -275,7 +272,7 @@ const Navbar = () => {
                       <UserCircleIcon
                         className={cn("w-8 h-8", themeClasses.textMuted)}
                       />
-                    )}
+                    )}{" "}
                     <div className="hidden sm:block text-left">
                       <span
                         className={cn(
@@ -283,7 +280,7 @@ const Navbar = () => {
                           themeClasses.textPrimary
                         )}
                       >
-                        {user?.firstName} {user?.lastName}
+                        Ashish Rajput
                       </span>
                       <span
                         className={cn(
@@ -291,7 +288,7 @@ const Navbar = () => {
                           themeClasses.textMuted
                         )}
                       >
-                        @{user?.username || "user"}
+                        @ashish
                       </span>
                     </div>
                     <ChevronDownIcon
@@ -318,6 +315,7 @@ const Navbar = () => {
                     aria-labelledby="user-menu"
                   >
                     <div className="py-2">
+                      {" "}
                       <div
                         className={cn(
                           "px-4 py-3 border-b",
@@ -330,7 +328,7 @@ const Navbar = () => {
                             themeClasses.textPrimary
                           )}
                         >
-                          {user?.firstName} {user?.lastName}
+                          Ashish Rajput
                         </p>
                         <p
                           className={cn(
@@ -338,7 +336,7 @@ const Navbar = () => {
                             themeClasses.textMuted
                           )}
                         >
-                          {user?.email}
+                          @ashish
                         </p>
                       </div>
                       <Link
