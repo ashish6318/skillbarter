@@ -22,7 +22,7 @@ const globalLimiter = rateLimit({
 // Authentication rate limiter - stricter for login/register
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Max 5 attempts per 15 minutes
+  max: 20, // Max 20 attempts per 15 minutes (increased from 5)
   skipSuccessfulRequests: true,
   message: {
     error: 'Too many authentication attempts',
@@ -31,7 +31,7 @@ const authLimiter = rateLimit({
   handler: (req, res) => {
     res.status(429).json({
       success: false,
-      message: 'Too many authentication attempts. Please try again later.',
+      message: 'Too many authentication attempts. Please try again in a few minutes.',
       retryAfter: Math.round(req.rateLimit.resetTime)
     });
   }
