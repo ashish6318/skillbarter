@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const sessionController = require('../controllers/sessionController');
 const { protect } = require('../middleware/auth');
-const { validateSession, validateRating, validateSessionUpdate } = require('../middleware/validation');
+const { validateSession, validateRating, validateSessionUpdate, validateSessionReview } = require('../middleware/validation');
 const { sessionRateLimit } = require('../middleware/rateLimiting');
 
 // Apply rate limiting to all session routes
@@ -42,7 +42,7 @@ router.post('/:id/end', sessionController.endSession);
 router.get('/:id/room', sessionController.getRoomDetails);
 
 // Submit session review
-router.post('/:id/review', sessionController.reviewSession);
+router.post('/:id/review', validateSessionReview, sessionController.reviewSession);
 
 // Rate session (legacy endpoint for backward compatibility)
 router.post('/:id/rate', validateRating, sessionController.rateSession);

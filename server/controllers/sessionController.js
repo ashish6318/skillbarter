@@ -234,74 +234,121 @@ const createSession = async (req, res) => {
 
 // Update session status (accept/reject/cancel)
 const updateSessionStatus = async (req, res) => {
-  try {    const { id } = req.params;
+  try {
+    const { id } = req.params;
     const { status, reason } = req.body;
     const currentUserId = req.user.id;
+    
+    // Get io instance from app
+    const io = req.app.get('io');
+
+    console.log('Update session request:', { id, status, reason, currentUserId });
 
     const session = await Session.findById(id)
       .populate('teacher', 'name profilePicture email')
       .populate('student', 'name profilePicture email');
 
     if (!session) {
+      console.log('Session not found:', id);
       return res.status(404).json({ error: 'Session not found' });
     }
 
+    console.log('Session found:', { 
+      sessionId: session._id, 
+      currentStatus: session.status, 
+      teacherId: session.teacher._id, 
+      studentId: session.student._id 
+    });
+
     // Check permissions based on status change
     if (status === 'confirmed' && session.teacher._id.toString() !== currentUserId) {
+      console.log('Permission denied: Only teacher can confirm sessions');
       return res.status(403).json({ error: 'Only teacher can confirm sessions' });
     }
 
     if (status === 'cancelled') {
       if (session.teacher._id.toString() !== currentUserId && session.student._id.toString() !== currentUserId) {
+        console.log('Permission denied: Only participants can cancel sessions');
         return res.status(403).json({ error: 'Only participants can cancel sessions' });
       }
     }    // Handle status transitions
     if (status === 'confirmed' && session.status === 'pending') {
-      // Deduct credits from student when session is confirmed
-      const requiredCredits = Math.ceil(session.duration / 60);
-      await processCredits(session.student._id, -requiredCredits, 'session_booking', `Session booking: ${session.skill}`, session._id);
-      
-      // Get updated user credit balance for notification
-      const updatedStudent = await User.findById(session.student._id).select('credits');
-      
-      // Emit credit deduction notification to student
-      if (io) {
-        io.to(session.student._id.toString()).emit('creditDeduction', {
-          sessionId: session._id,
-          skill: session.skill,
-          creditsDeducted: requiredCredits,
-          remainingCredits: updatedStudent.credits,
-          scheduledFor: session.scheduledFor
-        });
+      console.log('Processing session confirmation...');
+      try {
+        // Deduct credits from student when session is confirmed
+        const requiredCredits = Math.ceil(session.duration / 60);
+        console.log('Deducting credits:', { studentId: session.student._id, requiredCredits });
+        
+        await processCredits(session.student._id, -requiredCredits, 'session_booking', `Session booking: ${session.skill}`, session._id);
+        
+        // Get updated user credit balance for notification
+        const updatedStudent = await User.findById(session.student._id).select('credits');
+        console.log('Student credits after deduction:', updatedStudent.credits);
+        
+        // Emit credit deduction notification to student
+        if (io) {
+          io.to(session.student._id.toString()).emit('creditDeduction', {
+            sessionId: session._id,
+            skill: session.skill,
+            creditsDeducted: requiredCredits,
+            remainingCredits: updatedStudent.credits,
+            scheduledFor: session.scheduledFor
+          });
+        }
+      } catch (creditError) {
+        console.error('Error processing credits:', creditError);
+        return res.status(500).json({ error: 'Failed to process credits', details: creditError.message });
       }
     } else if (status === 'cancelled' && session.status === 'confirmed') {
-      // Refund credits if session was confirmed but then cancelled
-      const requiredCredits = Math.ceil(session.duration / 60);
-      await processCredits(session.student._id, requiredCredits, 'session_cancellation', `Session cancellation refund: ${session.skill}`, session._id);    } else if (status === 'completed' && session.status === 'confirmed') {
-      // Award credits to teacher when session is completed
-      const earnedCredits = Math.ceil(session.duration / 60);
-      await processCredits(session.teacher._id, earnedCredits, 'session_completion', `Session teaching: ${session.skill}`, session._id);
-      
-      // Update total hours for both participants (using session duration as actualDuration)
-      const sessionHours = Math.ceil(session.duration / 60); // Round up to minimum 1 hour
-      
-      // Update teacher's total hours taught
-      await User.findByIdAndUpdate(session.teacher._id, {
-        $inc: { totalHoursTaught: sessionHours }
-      });
-      
-      // Update student's total hours learned
-      await User.findByIdAndUpdate(session.student._id, {
-        $inc: { totalHoursLearned: sessionHours }
-      });
-      
-      console.log(`Updated hours via status update: Teacher +${sessionHours}h taught, Student +${sessionHours}h learned`);
-    }    // Update session
+      console.log('Processing session cancellation refund...');
+      try {
+        // Refund credits if session was confirmed but then cancelled
+        const requiredCredits = Math.ceil(session.duration / 60);
+        await processCredits(session.student._id, requiredCredits, 'session_cancellation', `Session cancellation refund: ${session.skill}`, session._id);
+      } catch (creditError) {
+        console.error('Error processing refund:', creditError);
+        return res.status(500).json({ error: 'Failed to process refund', details: creditError.message });
+      }
+    } else if (status === 'completed' && session.status === 'confirmed') {
+      console.log('Processing session completion...');
+      try {
+        // Award credits to teacher when session is completed
+        const earnedCredits = Math.ceil(session.duration / 60);
+        await processCredits(session.teacher._id, earnedCredits, 'session_completion', `Session teaching: ${session.skill}`, session._id);
+        
+        // Update total hours for both participants (using session duration as actualDuration)
+        const sessionHours = Math.ceil(session.duration / 60); // Round up to minimum 1 hour
+        
+        // Update teacher's total hours taught
+        await User.findByIdAndUpdate(session.teacher._id, {
+          $inc: { totalHoursTaught: sessionHours }
+        });
+        
+        // Update student's total hours learned
+        await User.findByIdAndUpdate(session.student._id, {
+          $inc: { totalHoursLearned: sessionHours }
+        });
+        
+        console.log(`Updated hours via status update: Teacher +${sessionHours}h taught, Student +${sessionHours}h learned`);
+      } catch (completionError) {
+        console.error('Error processing completion:', completionError);
+        return res.status(500).json({ error: 'Failed to process completion', details: completionError.message });
+      }
+    }
+
+    // Update session
+    console.log('Updating session status:', { from: session.status, to: status });
     session.status = status;
     if (reason) session.cancellationReason = reason;
     if (status === 'completed') session.completedAt = new Date();
 
-    await session.save();
+    try {
+      await session.save();
+      console.log('Session status updated successfully');
+    } catch (saveError) {
+      console.error('Error saving session:', saveError);
+      return res.status(500).json({ error: 'Failed to save session', details: saveError.message });
+    }
 
     // Send email notifications for status changes
     try {
@@ -379,8 +426,9 @@ const updateSessionStatus = async (req, res) => {
     } catch (emailError) {
       console.error('Failed to send session status email:', emailError);
       // Don't fail the status update if email fails
-    }    // Emit notifications
-    const io = req.app.get('io');
+    }
+    
+    // Emit notifications
     if (io) {
       const notificationData = {
         sessionId: session._id,
@@ -420,7 +468,12 @@ const updateSessionStatus = async (req, res) => {
     res.json({ session });
   } catch (error) {
     console.error('Error updating session status:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      error: 'Internal server error', 
+      details: error.message,
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    });
   }
 };
 
@@ -626,21 +679,26 @@ const startSession = async (req, res) => {
       return res.status(400).json({ error: 'Session must be confirmed to start' });
     }
 
-    // Check if it's time to start (within 15 minutes of scheduled time)
+    // Check if it's time to start (30 minutes before to 2 hours after scheduled time)
     const now = new Date();
     const scheduledTime = new Date(session.scheduledFor);
-    const timeDiff = Math.abs(now - scheduledTime) / (1000 * 60); // difference in minutes
+    const timeDiff = (now - scheduledTime) / (1000 * 60); // difference in minutes (positive if past scheduled time)
 
     console.log('Time check:', {
       now: now.toISOString(),
       scheduledTime: scheduledTime.toISOString(),
       timeDiff: timeDiff,
-      canStart: timeDiff <= 15 || now >= scheduledTime
+      canStart: timeDiff >= -30 && timeDiff <= 120
     });
 
-    if (timeDiff > 15 && now < scheduledTime) {
-      console.log('Session cannot be started yet - too early');
-      return res.status(400).json({ error: 'Session can only be started within 15 minutes of scheduled time' });
+    if (timeDiff < -30) {
+      console.log('Session cannot be started yet - too early (more than 30 minutes before)');
+      return res.status(400).json({ error: 'Session can only be started 30 minutes before scheduled time' });
+    }
+    
+    if (timeDiff > 120) {
+      console.log('Session window closed - too late (more than 2 hours after)');
+      return res.status(400).json({ error: 'Session window has closed (more than 2 hours past scheduled time)' });
     }    // Generate room details if not already generated
     if (!session.roomId) {
       // Use a simpler room ID format that's more likely to work with Jitsi
@@ -870,6 +928,7 @@ const reviewSession = async (req, res) => {
     const currentUserId = req.user.id;
 
     // Debug logging
+    console.log('=== REVIEW SESSION SUBMISSION ===');
     console.log('Review submission data:', {
       sessionId: id,
       userId: currentUserId,
@@ -885,28 +944,53 @@ const reviewSession = async (req, res) => {
       .populate('student', 'name');
 
     if (!session) {
+      console.log('❌ Session not found:', id);
       return res.status(404).json({ error: 'Session not found' });
     }
 
+    console.log('✅ Session found:', {
+      id: session._id,
+      status: session.status,
+      student: session.student._id,
+      teacher: session.teacher._id,
+      hasExistingReview: !!(session.review && session.review.rating)
+    });
+
     if (session.status !== 'completed') {
-      return res.status(400).json({ error: 'Can only review completed sessions' });
+      console.log('❌ Session not completed. Current status:', session.status);
+      return res.status(400).json({ error: `Can only review completed sessions. Current status: ${session.status}` });
     }
 
     if (session.student._id.toString() !== currentUserId) {
+      console.log('❌ Access denied. Session student:', session.student._id, 'Current user:', currentUserId);
       return res.status(403).json({ error: 'Only student can review the session' });
     }
 
     if (session.review && session.review.rating) {
+      console.log('❌ Session already reviewed:', session.review);
       return res.status(400).json({ error: 'Session already reviewed' });
     }
 
     // Validate rating (convert to number if needed)
     const numericRating = Number(rating);
-    console.log('Converted rating:', numericRating, 'isNaN:', isNaN(numericRating));
+    console.log('🔢 Rating validation:', {
+      originalRating: rating,
+      originalType: typeof rating,
+      numericRating,
+      numericType: typeof numericRating,
+      isNaN: isNaN(numericRating),
+      isInRange: numericRating >= 1 && numericRating <= 5
+    });
     
     if (isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
-    }    // Update session with review
+      console.log('❌ Invalid rating:', { rating, numericRating });
+      return res.status(400).json({ 
+        error: 'Rating must be between 1 and 5',
+        received: { rating, type: typeof rating, converted: numericRating }
+      });
+    }
+
+    console.log('✅ Rating validation passed:', numericRating);    // Update session with review
     session.review = {
       rating: numericRating,
       feedback,

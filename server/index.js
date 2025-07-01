@@ -71,6 +71,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Rate limiting
 app.use(globalLimiter);
 
+// Make io available to controllers
+app.set('io', io);
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({

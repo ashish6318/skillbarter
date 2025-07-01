@@ -49,8 +49,10 @@ const SessionCard = ({ session, currentUser, onAction }) => {
   const canStart = () => {
     const now = new Date();
     const scheduledTime = new Date(session.scheduledFor);
-    const timeDiff = Math.abs(now - scheduledTime) / (1000 * 60); // minutes
-    return session.status === "confirmed" && timeDiff <= 15;
+    const timeDiff = (now - scheduledTime) / (1000 * 60); // minutes (positive if past scheduled time)
+
+    // Allow starting 30 minutes before scheduled time until 2 hours after
+    return session.status === "confirmed" && timeDiff >= -30 && timeDiff <= 120;
   };
 
   const canEnd = () => {
@@ -102,6 +104,35 @@ const SessionCard = ({ session, currentUser, onAction }) => {
             </span>
             <span>🕐 {format(new Date(session.scheduledFor), "h:mm a")}</span>
             <span>⏱️ {formatDuration(session.duration)}</span>
+            {session.status === "confirmed" &&
+              (() => {
+                const now = new Date();
+                const scheduledTime = new Date(session.scheduledFor);
+                const timeDiff = (now - scheduledTime) / (1000 * 60); // minutes
+
+                if (timeDiff < -30) {
+                  const hoursUntil = Math.ceil(
+                    (scheduledTime - now) / (1000 * 60 * 60)
+                  );
+                  return (
+                    <span className="text-gray-600 dark:text-gray-400">
+                      🕒 Starts in {hoursUntil}h
+                    </span>
+                  );
+                } else if (timeDiff >= -30 && timeDiff <= 120) {
+                  return (
+                    <span className="text-green-600 dark:text-green-400">
+                      ✅ Ready to start
+                    </span>
+                  );
+                } else {
+                  return (
+                    <span className="text-gray-500 dark:text-gray-500">
+                      ⏰ Session window closed
+                    </span>
+                  );
+                }
+              })()}
           </div>{" "}
           {/* Participant Info */}
           <div className="flex items-center gap-4 mb-3">
@@ -295,6 +326,15 @@ const SessionCard = ({ session, currentUser, onAction }) => {
           {/* Confirmed Status Actions */}
           {session.status === "confirmed" && (
             <div className="flex flex-col gap-2">
+              {canStart() && (
+                <button
+                  onClick={() => handleAction("start")}
+                  disabled={loading}
+                  className="px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                >
+                  🚀 Start Session
+                </button>
+              )}
               <button
                 onClick={() => setShowReschedule(true)}
                 disabled={loading}
@@ -341,17 +381,7 @@ const SessionCard = ({ session, currentUser, onAction }) => {
             >
               End Session
             </button>
-          )}{" "}
-          {/* Room Access - Show join button for both confirmed and in-progress sessions */}
-          {session.status === "confirmed" && canStart() && (
-            <button
-              onClick={() => handleAction("start")}
-              disabled={loading}
-              className="px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-            >
-              🚀 Start Session
-            </button>
-          )}{" "}
+          )}
           {/* Video Call Access - Show when session is in progress */}
           {session.status === "in_progress" && (
             <button
