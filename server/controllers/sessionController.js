@@ -447,16 +447,15 @@ const getAvailableSlots = async (req, res) => {
     const startOfDay = new Date(selectedDate);
     const endOfDay = new Date(selectedDate);
     
-    // For development/testing: Generate slots for the full day
-    // If testing today, start from current time minus 1 hour
+    // Generate available time slots for the selected date
     const currentTime = new Date();
     const isToday = selectedDate.toDateString() === currentTime.toDateString();
     
     let startHour, endHour;
     
     if (isToday) {
-      // For today: start from current hour (or a bit earlier for immediate testing)
-      startHour = Math.max(0, currentTime.getHours() - 1);
+      // For today: start from current hour
+      startHour = Math.max(0, currentTime.getHours());
       endHour = 23;
     } else {
       // For future dates: normal business hours
@@ -501,8 +500,10 @@ const getAvailableSlots = async (req, res) => {
         const sessionEnd = addHours(sessionStart, session.duration / 60);
         
         return (currentSlot < sessionEnd && slotEnd > sessionStart);
-      });      // Only include future slots (reduced to 1 minute for immediate testing)
-      const isInFuture = currentSlot.getTime() > (now.getTime() + 1 * 60 * 1000);
+      });
+      
+      // Only include future slots
+      const isInFuture = currentSlot.getTime() > (now.getTime() + 5 * 60 * 1000); // 5 minutes buffer
 
       if (slots.length < 5) { // Only log first 5 slots to avoid spam
         console.log(`Slot ${currentSlot.toISOString()}: conflict=${hasConflict}, future=${isInFuture}`);

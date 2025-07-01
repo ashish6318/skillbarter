@@ -6,7 +6,6 @@ import {
   AcademicCapIcon,
   UserGroupIcon,
   ClockIcon,
-  ArrowRightIcon,
   CheckCircleIcon,
   SparklesIcon,
   LightBulbIcon,
@@ -15,6 +14,7 @@ import {
   PlayCircleIcon,
   GlobeAltIcon,
   ChevronDownIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { themeClasses, cn } from "../utils/theme";
 import chatGPTImage from "../assets/images/ChatGPT Image Jun 23, 2025, 08_43_29 AM.png";
@@ -185,14 +185,9 @@ const HomePage = () => {
       animate="visible"
       variants={containerVariants}
     >
-      {" "}
-      {/* Full-Screen Hero Section with Background Image */}
-      <section
-        className="relative overflow-hidden h-screen flex items-center justify-center"
-        role="banner"
-        aria-label="Welcome to SkillBarter"
-      >
-        {/* Full-Screen Background Image */}
+      {/* Modern Hero Section with ChatGPT Background */}
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center">
+        {/* ChatGPT Background Image */}
         <motion.div
           className="absolute inset-0 z-0"
           initial={{ scale: 1.1, opacity: 0 }}
@@ -204,48 +199,99 @@ const HomePage = () => {
             alt="SkillBarter platform illustration showing people collaborating and learning together"
             className="w-full h-full object-cover object-center"
           />
-          {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-black/40 dark:bg-black/60" />
-          {/* Gradient overlay for better text contrast */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+          {/* Modern gradient overlays for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
+
+          {/* Animated gradient overlay for modern effect */}
+          <motion.div
+            className="absolute inset-0 opacity-20"
+            animate={{
+              background: [
+                "radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)",
+                "radial-gradient(circle at 80% 20%, rgba(0, 0, 0, 0.2) 0%, transparent 50%)",
+                "radial-gradient(circle at 40% 40%, rgba(128, 128, 128, 0.15) 0%, transparent 50%)",
+              ],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              repeatType: "reverse",
+            }}
+          />
+
+          {/* Floating Particles */}
+          <motion.div
+            className="absolute inset-0 opacity-10"
+            style={{
+              background:
+                "radial-gradient(circle at 2px 2px, rgba(255,255,255,0.3) 1px, transparent 0)",
+              backgroundSize: "50px 50px",
+            }}
+            animate={{
+              backgroundPosition: ["0px 0px", "50px 50px"],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
         </motion.div>
 
-        {/* Centered Content */}
-        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto py-20">
-          {/* Main Heading */}
+        {/* Hero Content */}
+        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+          {/* Premium Badge */}
+          <motion.div
+            className="inline-flex items-center space-x-3 px-6 py-3 rounded-full mb-8 bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl"
+            variants={heroVariants.badge}
+            initial="hidden"
+            animate="visible"
+            whileHover={{
+              scale: 1.05,
+              backgroundColor: "rgba(255, 255, 255, 0.15)",
+            }}
+          >
+            <SparklesIcon className="h-5 w-5 text-gray-300" />
+            <span className="text-white font-semibold text-sm tracking-wide font-['Poppins',_sans-serif]">
+              Next-Generation Learning Platform
+            </span>
+            <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+          </motion.div>
+
+          {/* Main Heading with Gradient Text */}
           <motion.h1
-            className={cn(
-              "text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6",
-              "font-['Poppins',_sans-serif]",
-              "text-white drop-shadow-2xl leading-tight"
-            )}
+            className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 font-['Poppins',_sans-serif] leading-tight"
             variants={heroVariants.heading}
             initial="hidden"
             animate="visible"
           >
-            Learn. Teach.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+            <span className="text-white">Learn. </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 via-white to-gray-400">
+              Teach.
+            </span>
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-300">
               Exchange.
             </span>
           </motion.h1>
 
           {/* Subtitle */}
           <motion.p
-            className={cn(
-              "text-lg sm:text-xl lg:text-2xl mb-8 sm:mb-12 max-w-2xl mx-auto",
-              "text-gray-200 drop-shadow-lg font-medium leading-relaxed"
-            )}
+            className="text-xl sm:text-2xl lg:text-3xl mb-12 max-w-4xl mx-auto text-gray-300 font-medium leading-relaxed"
             variants={heroVariants.subtitle}
             initial="hidden"
             animate="visible"
           >
-            Connect with peers, share skills, and grow together in our vibrant
-            learning community.
+            Connect with peers, share expertise, and grow together in our{" "}
+            <span className="text-white font-semibold">
+              vibrant learning ecosystem
+            </span>
           </motion.p>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
           <motion.div
-            className="flex justify-center"
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             variants={heroVariants.cta}
             initial="hidden"
             animate="visible"
@@ -254,183 +300,74 @@ const HomePage = () => {
               <motion.div
                 whileHover={{ scale: 1.05, y: -3 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative group"
               >
                 <Link
                   to="/dashboard"
-                  className={cn(
-                    "relative px-8 sm:px-10 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-full",
-                    "transition-all duration-300 inline-flex items-center justify-center",
-                    "font-['Poppins',_sans-serif]",
-                    "bg-white text-gray-900 hover:bg-gray-100",
-                    "shadow-2xl hover:shadow-3xl",
-                    "border-2 border-white/20",
-                    "focus:outline-none focus:ring-4 focus:ring-white/30",
-                    "backdrop-blur-sm"
-                  )}
-                  aria-label="Navigate to your dashboard"
+                  className="px-10 py-4 text-lg font-semibold rounded-2xl bg-white text-black hover:bg-gray-100 shadow-2xl border border-gray-300 backdrop-blur-sm transition-all duration-300 inline-flex items-center font-['Poppins',_sans-serif]"
                 >
                   <span className="flex items-center">
                     Go to Dashboard
-                    <motion.div
-                      className="ml-3"
-                      animate={shouldReduceMotion ? {} : { x: [0, 3, 0] }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        repeatDelay: 1,
-                      }}
-                    >
-                      <ArrowRightIcon className="w-5 h-5" />
-                    </motion.div>
+                    <ArrowRightIcon className="w-5 h-5 ml-3" />
                   </span>
                 </Link>
               </motion.div>
             ) : (
-              <motion.div
-                whileHover={{ scale: 1.05, y: -3 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative group"
-              >
-                <Link
-                  to="/register"
-                  className={cn(
-                    "relative px-8 sm:px-10 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-full",
-                    "transition-all duration-300 inline-flex items-center justify-center",
-                    "font-['Poppins',_sans-serif]",
-                    "bg-white text-gray-900 hover:bg-gray-100",
-                    "shadow-2xl hover:shadow-3xl",
-                    "border-2 border-white/20",
-                    "focus:outline-none focus:ring-4 focus:ring-white/30",
-                    "backdrop-blur-sm"
-                  )}
-                  aria-label="Create your free account"
+              <>
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -3 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <span className="flex items-center">
+                  <Link
+                    to="/register"
+                    className="px-10 py-4 text-lg font-semibold rounded-2xl bg-white text-black hover:bg-gray-100 shadow-2xl border border-gray-300 backdrop-blur-sm transition-all duration-300 inline-flex items-center font-['Poppins',_sans-serif]"
+                  >
                     <RocketLaunchIcon className="w-5 h-5 mr-3" />
                     Start Learning
-                  </span>
-                </Link>
-              </motion.div>
+                  </Link>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -3 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link
+                    to="/discover"
+                    className="px-10 py-4 text-lg font-semibold rounded-2xl bg-black/30 text-white hover:bg-black/40 border border-white/30 backdrop-blur-sm transition-all duration-300 inline-flex items-center font-['Poppins',_sans-serif]"
+                  >
+                    <LightBulbIcon className="w-5 h-5 mr-3" />
+                    Explore Skills
+                  </Link>
+                </motion.div>
+              </>
             )}
           </motion.div>
         </div>
 
-        {/* Enhanced Scroll Indicator */}
+        {/* Scroll Indicator */}
         <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-500/50 dark:focus:ring-gray-400/50 rounded-full p-2"
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5, duration: 0.6 }}
-          role="button"
-          aria-label="Scroll down to see more content"
-          tabIndex={0}
-          onClick={() => {
-            window.scrollTo({
-              top: window.innerHeight,
-              behavior: "smooth",
-            });
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              window.scrollTo({
-                top: window.innerHeight,
-                behavior: "smooth",
-              });
-            }
-          }}
+          onClick={() =>
+            window.scrollTo({ top: window.innerHeight, behavior: "smooth" })
+          }
           whileHover={{ scale: 1.1 }}
         >
           <motion.div
-            animate={shouldReduceMotion ? {} : { y: [0, 8, 0] }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="w-6 h-10 border-2 rounded-full flex justify-center border-white/40"
           >
-            <div
-              className={cn(
-                "w-6 h-10 border-2 rounded-full flex justify-center relative",
-                "border-white/40 dark:border-white/30"
-              )}
-            >
-              <motion.div
-                className="w-1 h-3 bg-white/70 rounded-full mt-2"
-                animate={
-                  shouldReduceMotion
-                    ? {}
-                    : {
-                        y: [0, 12, 0],
-                        opacity: [0.7, 1, 0.7],
-                      }
-                }
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-            </div>
+            <motion.div
+              className="w-1 h-3 bg-white/70 rounded-full mt-2"
+              animate={{ y: [0, 12, 0], opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
           </motion.div>
         </motion.div>
       </section>
-      {/* Clean Trust Indicators */}
-      <section className="py-24 border-t border-gray-200 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="grid grid-cols-2 lg:grid-cols-4 gap-8"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={index}
-                  className="text-center"
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <motion.div
-                    className={cn(
-                      "w-12 h-12 mx-auto mb-4 rounded-xl flex items-center justify-center",
-                      themeClasses.bgSecondary,
-                      themeClasses.textPrimary
-                    )}
-                    whileHover={{ rotate: 5 }}
-                  >
-                    <Icon className="w-6 h-6" />
-                  </motion.div>
-                  <motion.div
-                    className={cn(
-                      "text-3xl font-bold mb-2",
-                      "font-['Poppins',_sans-serif]",
-                      themeClasses.textPrimary
-                    )}
-                    initial={{ scale: 0.5 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.1 + 0.5, type: "spring" }}
-                  >
-                    {stat.value}
-                  </motion.div>
-                  <div className={cn("text-sm", themeClasses.textSecondary)}>
-                    {stat.label}
-                  </div>
-                  <div className={cn("text-xs mt-1", themeClasses.textMuted)}>
-                    {stat.description}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
-      {/* Clean Features Section */}
-      <section className="py-24">
+      {/* Premium Stats Section */}
+      <section className={cn("py-24", themeClasses.bgPrimary)}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-16"
@@ -441,12 +378,159 @@ const HomePage = () => {
           >
             <h2
               className={cn(
-                "text-4xl font-bold mb-6",
-                "font-['Poppins',_sans-serif]",
+                "text-4xl font-bold mb-6 font-['Poppins',_sans-serif]",
                 themeClasses.textPrimary
               )}
             >
-              Why Choose SkillBarter?
+              Join Our{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-600 to-gray-800 dark:from-gray-300 dark:to-gray-100">
+                Thriving Community
+              </span>
+            </h2>
+            <p
+              className={cn(
+                "text-xl max-w-3xl mx-auto",
+                themeClasses.textSecondary
+              )}
+            >
+              Experience the power of peer-to-peer learning with thousands of
+              motivated learners and experts
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-2 lg:grid-cols-4 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
+              const gradients = [
+                "from-gray-600 to-gray-700",
+                "from-gray-500 to-gray-600",
+                "from-gray-700 to-gray-800",
+                "from-gray-400 to-gray-500",
+              ];
+              const bgColors = [
+                "bg-gray-50 dark:bg-gray-900/20",
+                "bg-gray-100 dark:bg-gray-800/20",
+                "bg-gray-200 dark:bg-gray-700/20",
+                "bg-gray-50 dark:bg-gray-900/20",
+              ];
+
+              return (
+                <motion.div
+                  key={index}
+                  className={cn(
+                    "relative p-6 rounded-2xl border transition-all duration-300 group cursor-pointer",
+                    themeClasses.bgSecondary,
+                    "border-gray-200/50 dark:border-gray-700/50",
+                    "hover:border-gray-300 dark:hover:border-gray-600",
+                    "hover:shadow-xl hover:shadow-gray-500/10"
+                  )}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                >
+                  {/* Gradient Background */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-5 transition-opacity duration-300 bg-gradient-to-br",
+                      gradients[index]
+                    )}
+                  />
+
+                  {/* Icon with gradient background */}
+                  <div
+                    className={cn(
+                      "w-14 h-14 rounded-xl flex items-center justify-center mb-4 mx-auto",
+                      bgColors[index]
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "w-8 h-8 rounded-lg bg-gradient-to-r flex items-center justify-center",
+                        gradients[index]
+                      )}
+                    >
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+
+                  {/* Value with animated counter */}
+                  <motion.div
+                    className={cn(
+                      "text-3xl font-bold mb-2 text-center font-['Poppins',_sans-serif]",
+                      themeClasses.textPrimary
+                    )}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      delay: index * 0.1 + 0.5,
+                      type: "spring",
+                      stiffness: 200,
+                    }}
+                    viewport={{ once: true }}
+                  >
+                    {stat.value}
+                  </motion.div>
+
+                  {/* Label */}
+                  <div
+                    className={cn(
+                      "text-sm font-medium text-center",
+                      themeClasses.textSecondary
+                    )}
+                  >
+                    {stat.label}
+                  </div>
+
+                  {/* Description */}
+                  <div
+                    className={cn(
+                      "text-xs mt-2 text-center",
+                      themeClasses.textMuted
+                    )}
+                  >
+                    {stat.description}
+                  </div>
+
+                  {/* Hover glow effect */}
+                  <motion.div
+                    className={cn(
+                      "absolute -inset-1 rounded-2xl opacity-0 group-hover:opacity-20 blur-lg bg-gradient-to-r transition-opacity duration-300",
+                      gradients[index]
+                    )}
+                    style={{ zIndex: -1 }}
+                  />
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      </section>
+      {/* Premium Features Section */}
+      <section className={cn("py-24", themeClasses.bgSecondary)}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            className="text-center mb-16"
+            variants={itemVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <h2
+              className={cn(
+                "text-4xl font-bold mb-6 font-['Poppins',_sans-serif]",
+                themeClasses.textPrimary
+              )}
+            >
+              Why Choose{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-600 to-gray-800 dark:from-gray-300 dark:to-gray-100">
+                SkillBarter
+              </span>
+              ?
             </h2>
             <p
               className={cn(
@@ -456,10 +540,13 @@ const HomePage = () => {
             >
               Experience the future of learning with our innovative platform
               designed for{" "}
-              <span className={cn("font-medium", themeClasses.textPrimary)}>
+              <span
+                className={cn(
+                  "font-medium text-transparent bg-clip-text bg-gradient-to-r from-gray-600 to-gray-800 dark:from-gray-300 dark:to-gray-100"
+                )}
+              >
                 modern professionals
               </span>
-              .
             </p>
           </motion.div>
 
@@ -472,38 +559,98 @@ const HomePage = () => {
           >
             {features.map((feature, index) => {
               const Icon = feature.icon;
+              const gradients = [
+                "from-gray-600 to-gray-700",
+                "from-gray-500 to-gray-600",
+                "from-gray-700 to-gray-800",
+                "from-gray-400 to-gray-500",
+              ];
+              const bgColors = [
+                "bg-gray-50 dark:bg-gray-900/20",
+                "bg-gray-100 dark:bg-gray-800/20",
+                "bg-gray-200 dark:bg-gray-700/20",
+                "bg-gray-50 dark:bg-gray-900/20",
+              ];
+
               return (
                 <motion.div
                   key={index}
                   className={cn(
-                    "p-8 rounded-2xl border transition-all duration-300",
-                    themeClasses.bgSecondary,
-                    themeClasses.borderSecondary,
+                    "relative p-8 rounded-3xl border transition-all duration-500 group cursor-pointer overflow-hidden",
+                    themeClasses.bgPrimary,
+                    "border-gray-200/50 dark:border-gray-700/50",
                     "hover:border-gray-300 dark:hover:border-gray-600",
-                    "hover:shadow-lg"
+                    "hover:shadow-2xl hover:shadow-gray-500/20"
                   )}
                   variants={cardVariants}
                   whileHover="hover"
                 >
+                  {/* Animated Background Gradient */}
                   <motion.div
                     className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center mb-6",
-                      themeClasses.bgTertiary,
-                      themeClasses.textPrimary
+                      "absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 bg-gradient-to-br",
+                      gradients[index]
+                    )}
+                    initial={false}
+                  />
+
+                  {/* Floating particles effect */}
+                  <motion.div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500"
+                    style={{
+                      background:
+                        "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)",
+                      backgroundSize: "20px 20px",
+                    }}
+                    animate={{
+                      backgroundPosition: ["0px 0px", "20px 20px"],
+                    }}
+                    transition={{
+                      duration: 10,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+
+                  {/* Icon with premium styling */}
+                  <motion.div
+                    className={cn(
+                      "w-16 h-16 rounded-2xl flex items-center justify-center mb-6 relative",
+                      bgColors[index]
                     )}
                     whileHover={{ rotate: 10, scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 200 }}
                   >
-                    <Icon className="w-6 h-6" />
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-xl bg-gradient-to-r flex items-center justify-center shadow-lg",
+                        gradients[index]
+                      )}
+                    >
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+
+                    {/* Glow effect */}
+                    <motion.div
+                      className={cn(
+                        "absolute inset-0 rounded-2xl blur-lg bg-gradient-to-r opacity-0 group-hover:opacity-40 transition-opacity duration-300",
+                        gradients[index]
+                      )}
+                      style={{ zIndex: -1 }}
+                    />
                   </motion.div>
+
+                  {/* Title */}
                   <h3
                     className={cn(
-                      "text-xl font-bold mb-4",
-                      "font-['Poppins',_sans-serif]",
+                      "text-xl font-bold mb-4 font-['Poppins',_sans-serif]",
                       themeClasses.textPrimary
                     )}
                   >
                     {feature.title}
                   </h3>
+
+                  {/* Description */}
                   <p
                     className={cn(
                       "leading-relaxed",
@@ -512,6 +659,15 @@ const HomePage = () => {
                   >
                     {feature.description}
                   </p>
+
+                  {/* Hover border effect */}
+                  <motion.div
+                    className={cn(
+                      "absolute -inset-0.5 rounded-3xl opacity-0 group-hover:opacity-50 blur-sm bg-gradient-to-r transition-opacity duration-300",
+                      gradients[index]
+                    )}
+                    style={{ zIndex: -2 }}
+                  />
                 </motion.div>
               );
             })}

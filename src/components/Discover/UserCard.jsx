@@ -14,13 +14,13 @@ const UserCard = ({ user, onClick }) => {
   return (
     <div
       onClick={() => onClick?.(user)}
-      className="bg-bg-secondary border border-border-primary rounded-xl p-6 hover:shadow-[var(--shadow-lg)] transition-all duration-300 cursor-pointer hover:border-border-accent group hover:-translate-y-1"
+      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 group hover:-translate-y-1"
     >
       {/* Profile Section */}
       <div className="flex items-center mb-5">
         <div className="relative">
           {" "}
-          <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-tertiary flex items-center justify-center mr-4 ring-2 ring-border-secondary group-hover:ring-border-accent transition-all duration-300">
+          <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center mr-4 ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-gray-400 dark:group-hover:ring-gray-500 transition-all duration-300">
             {user.profilePicture ? (
               <img
                 src={user.profilePicture}
@@ -28,22 +28,22 @@ const UserCard = ({ user, onClick }) => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-lg font-semibold text-accent-primary">
+              <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
                 {getInitials(user.firstName, user.lastName)}
               </span>
             )}
           </div>
           {user.isOnline && (
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-theme-success border-2 border-bg-primary rounded-full"></div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
           )}
         </div>
         <div className="flex-1 min-w-0">
           {" "}
-          <h3 className="font-semibold text-text-primary text-lg leading-tight mb-1">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg leading-tight mb-1">
             {getFullName(user.firstName, user.lastName)}
           </h3>
           {user.country && (
-            <div className="flex items-center text-text-muted text-sm">
+            <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
               <MapPinIcon className="w-4 h-4 mr-1 flex-shrink-0" />
               <span className="truncate">{user.country}</span>
             </div>
@@ -52,42 +52,42 @@ const UserCard = ({ user, onClick }) => {
       </div>{" "}
       {/* Bio */}
       {user.bio && (
-        <p className="text-text-secondary text-sm mb-5 line-clamp-2 leading-relaxed">
+        <p className="text-gray-700 dark:text-gray-300 text-sm mb-5 line-clamp-2 leading-relaxed">
           {user.bio}
         </p>
       )}
       {/* Skills */}
       <div className="mb-5">
-        <h4 className="text-text-primary font-medium text-sm mb-3">
+        <h4 className="text-gray-900 dark:text-gray-100 font-medium text-sm mb-3">
           Skills Offered
         </h4>{" "}
         <div className="flex flex-wrap gap-2">
           {user.skillsOffered?.slice(0, 3).map((skill, index) => (
             <span
               key={index}
-              className="inline-flex items-center px-3 py-1.5 bg-accent-light text-accent-primary rounded-full text-xs font-medium border border-border-accent group-hover:bg-accent-primary group-hover:text-text-inverse transition-all duration-300"
+              className="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-full text-xs font-medium border border-gray-200 dark:border-gray-700 group-hover:bg-gray-900 dark:group-hover:bg-gray-100 group-hover:text-gray-100 dark:group-hover:text-gray-900 transition-all duration-300"
             >
               {skill.skill}
             </span>
           ))}
           {user.skillsOffered?.length > 3 && (
-            <span className="inline-flex items-center px-3 py-1.5 bg-bg-tertiary text-text-secondary rounded-full text-xs font-medium group-hover:bg-bg-elevated transition-all duration-300">
+            <span className="inline-flex items-center px-3 py-1.5 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-all duration-300">
               +{user.skillsOffered.length - 3} more
             </span>
           )}
         </div>
       </div>
       {/* Stats */}
-      <div className="flex justify-between items-center pt-4 border-t border-border-secondary">
-        <div className="flex items-center text-text-muted text-sm">
-          <StarIcon className="w-4 h-4 mr-1.5 text-theme-warning fill-current" />
-          <span className="font-medium text-text-primary">
+      <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
+          <StarIcon className="w-4 h-4 mr-1.5 text-yellow-500 fill-current" />
+          <span className="font-medium text-gray-900 dark:text-gray-100">
             {user.rating ? user.rating.toFixed(1) : "New"}
           </span>
         </div>
-        <div className="flex items-center text-text-muted text-sm">
+        <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
           <ClockIcon className="w-4 h-4 mr-1.5" />
-          <span className="font-medium text-text-primary">
+          <span className="font-medium text-gray-900 dark:text-gray-100">
             {user.totalHoursTaught || 0}h taught
           </span>
         </div>

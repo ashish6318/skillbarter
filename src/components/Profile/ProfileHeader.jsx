@@ -6,6 +6,7 @@ import {
   CalendarDaysIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
+import { motion } from "framer-motion";
 import {
   themeClasses,
   componentPatterns,
@@ -29,7 +30,12 @@ const ProfileHeader = ({ user, onEdit, isOwnProfile = true }) => {
     return [firstName, lastName].filter(Boolean).join(" ") || "User Name";
   };
   return (
-    <div className={cn(componentPatterns.card, "mb-6")}>
+    <motion.div
+      className={cn(componentPatterns.card, "mb-6")}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
         {/* Profile Picture */}
         <div className="relative">
@@ -59,15 +65,17 @@ const ProfileHeader = ({ user, onEdit, isOwnProfile = true }) => {
             )}
           </div>
           {isOwnProfile && (
-            <button
+            <motion.button
               className={cn(
                 "absolute bottom-0 right-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                themeClasses.gradientAccent,
+                "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900",
                 themeClasses.shadowMd
               )}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <CameraIcon className={cn("w-5 h-5", themeClasses.textInverse)} />
-            </button>
+              <CameraIcon className="w-5 h-5" />
+            </motion.button>
           )}
         </div>
 
@@ -113,16 +121,18 @@ const ProfileHeader = ({ user, onEdit, isOwnProfile = true }) => {
               )}
             </div>
             {isOwnProfile && (
-              <button
+              <motion.button
                 onClick={onEdit}
                 className={cn(
                   buttonVariants.secondary,
                   "flex items-center gap-2"
                 )}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <PencilIcon className="w-4 h-4" />
                 <span className="text-sm">Edit Profile</span>
-              </button>
+              </motion.button>
             )}
           </div>
           {/* Bio */}
@@ -184,7 +194,7 @@ const ProfileHeader = ({ user, onEdit, isOwnProfile = true }) => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

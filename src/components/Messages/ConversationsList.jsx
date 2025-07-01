@@ -111,9 +111,9 @@ const ConversationsList = ({
                   selectedUserId === conversation.otherUser._id
                     ? cn(
                         "border",
-                        themeClasses.bgSecondary,
-                        themeClasses.borderAccent,
-                        themeClasses.bgTertiary
+                        "bg-gray-100 dark:bg-gray-800",
+                        "border-gray-300 dark:border-gray-600",
+                        "shadow-sm"
                       )
                     : cn(themeClasses.hover)
                 )}
@@ -158,7 +158,7 @@ const ConversationsList = ({
                     )}
                     {/* Unread messages indicator */}
                     {conversation.unreadCount > 0 && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-bold rounded-full flex items-center justify-center">
                         {conversation.unreadCount > 9
                           ? "9+"
                           : conversation.unreadCount}

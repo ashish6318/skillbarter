@@ -1,12 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
 import UserCard from "../components/Discover/UserCard";
 import SearchFilter from "../components/Discover/SearchFilter";
 import UserDetailModal from "../components/Discover/UserDetailModal";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
 import { discoverUsers } from "../utils/api";
 import { themeClasses, componentPatterns, cn } from "../utils/theme";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      delayChildren: 0.1,
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
 
 const DiscoverPage = () => {
   const navigate = useNavigate();
@@ -124,39 +162,58 @@ const DiscoverPage = () => {
   }
 
   return (
-    <div className={cn("min-h-screen", themeClasses.bgPrimary)}>
+    <motion.div
+      className={cn("min-h-screen", themeClasses.bgPrimary)}
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* Hero Header Section */}
-      <div
+      <motion.div
         className={cn(
           "backdrop-blur-sm border-b",
           themeClasses.bgPrimary,
           themeClasses.borderSecondary
         )}
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <h1
+          <motion.div
+            className="text-center"
+            variants={itemVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.h1
               className={cn(
-                "text-5xl font-bold mb-6 font-heading leading-tight",
-                "bg-gradient-to-r from-text-primary via-accent-primary to-accent-hover bg-clip-text text-transparent"
+                "text-5xl font-bold mb-6 font-['Poppins',_sans-serif] leading-tight",
+                "text-transparent bg-clip-text bg-gradient-to-r from-gray-700 via-gray-800 to-gray-900 dark:from-gray-300 dark:via-gray-200 dark:to-gray-100"
               )}
+              variants={itemVariants}
             >
               Discover Amazing Skills
-            </h1>
-            <p
+            </motion.h1>
+            <motion.p
               className={cn(
                 "text-xl max-w-3xl mx-auto leading-relaxed",
                 themeClasses.textSecondary
               )}
+              variants={itemVariants}
             >
               Connect with incredible people worldwide to learn from and share
               knowledge with.
-              <span className={cn("font-medium", themeClasses.textAccent)}>
+              <span className={cn("font-medium", themeClasses.textPrimary)}>
                 {" "}
                 Your next learning adventure starts here.
               </span>
-            </p>
-            <div className="mt-8 flex justify-center">
+            </motion.p>
+            <motion.div
+              className="mt-8 flex justify-center"
+              variants={itemVariants}
+            >
               <div
                 className={cn(
                   "flex items-center space-x-8 text-sm",
@@ -167,7 +224,7 @@ const DiscoverPage = () => {
                   <div
                     className={cn(
                       "w-2 h-2 rounded-full mr-2",
-                      themeClasses.successBg
+                      "bg-gray-600 dark:bg-gray-400"
                     )}
                   ></div>
                   <span>Active Community</span>
@@ -176,7 +233,7 @@ const DiscoverPage = () => {
                   <div
                     className={cn(
                       "w-2 h-2 rounded-full mr-2",
-                      "bg-accent-primary"
+                      "bg-gray-700 dark:bg-gray-300"
                     )}
                   ></div>
                   <span>Expert Teachers</span>
@@ -185,26 +242,34 @@ const DiscoverPage = () => {
                   <div
                     className={cn(
                       "w-2 h-2 rounded-full mr-2",
-                      "bg-accent-muted"
+                      "bg-gray-500 dark:bg-gray-500"
                     )}
                   ></div>
                   <span>Flexible Learning</span>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <SearchFilter
-          onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
-          loading={searchLoading}
-        />{" "}
+      <motion.div
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        variants={itemVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
+        <motion.div variants={itemVariants}>
+          <SearchFilter
+            onSearch={handleSearch}
+            onFilterChange={handleFilterChange}
+            loading={searchLoading}
+          />
+        </motion.div>{" "}
         {users.length === 0 && !searchLoading ? (
-          <div className="text-center py-20">
+          <motion.div className="text-center py-20" variants={itemVariants}>
             <div
               className={cn(
                 "p-12 rounded-2xl border max-w-md mx-auto transition-all duration-300",
@@ -246,42 +311,72 @@ const DiscoverPage = () => {
                 amazing people in our community
               </p>
             </div>
-          </div>
+          </motion.div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {users.map((user) => (
-                <UserCard
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+            >
+              {users.map((user, index) => (
+                <motion.div
                   key={user._id}
-                  user={user}
-                  onClick={handleUserClick}
-                />
+                  variants={cardVariants}
+                  custom={index}
+                >
+                  <UserCard user={user} onClick={handleUserClick} />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
             {searchLoading && (
-              <div className="flex justify-center py-12">
+              <motion.div
+                className="flex justify-center py-12"
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <LoadingSpinner />
-              </div>
-            )}{" "}
+              </motion.div>
+            )}
             {pagination.hasMore && !searchLoading && (
-              <div className="text-center">
-                <button
+              <motion.div
+                className="text-center"
+                variants={itemVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+              >
+                <motion.button
                   onClick={handleLoadMore}
                   className={cn(
-                    "inline-flex items-center px-8 py-4 rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-1 hover:scale-105",
-                    themeClasses.gradientAccent,
-                    themeClasses.gradientHover,
-                    themeClasses.textInverse,
-                    themeClasses.shadowLg,
-                    "hover:shadow-[var(--shadow-xl)]"
+                    "inline-flex items-center px-8 py-4 rounded-xl font-medium transition-all duration-300 font-['Poppins',_sans-serif]",
+                    "bg-gray-900 dark:bg-white text-white dark:text-gray-900",
+                    "hover:bg-gray-800 dark:hover:bg-gray-100",
+                    "shadow-lg hover:shadow-xl",
+                    "border border-gray-900 dark:border-white"
                   )}
+                  whileHover={{
+                    scale: 1.05,
+                    y: -2,
+                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
+                  }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   Load More Users
-                  <svg
-                    className="ml-2 w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-200"
+                  <motion.svg
+                    className="ml-2 w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    animate={{ y: [0, 3, 0] }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
                   >
                     <path
                       strokeLinecap="round"
@@ -289,13 +384,13 @@ const DiscoverPage = () => {
                       strokeWidth={2}
                       d="M19 9l-7 7-7-7"
                     />
-                  </svg>
-                </button>
-              </div>
+                  </motion.svg>
+                </motion.button>
+              </motion.div>
             )}
           </>
         )}
-      </div>
+      </motion.div>
 
       <UserDetailModal
         user={selectedUser}
@@ -303,7 +398,7 @@ const DiscoverPage = () => {
         onClose={() => setIsModalOpen(false)}
         onMessage={handleMessageUser}
       />
-    </div>
+    </motion.div>
   );
 };
 

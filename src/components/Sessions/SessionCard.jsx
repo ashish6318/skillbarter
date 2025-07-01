@@ -2,13 +2,7 @@ import React, { useState } from "react";
 import { format } from "date-fns";
 import SessionReview from "./SessionReview";
 import RescheduleModal from "./RescheduleModal";
-import {
-  themeClasses,
-  componentPatterns,
-  cn,
-  statusClasses,
-  buttonVariants,
-} from "../../utils/theme";
+import { themeClasses, componentPatterns, cn } from "../../utils/theme";
 
 const SessionCard = ({ session, currentUser, onAction }) => {
   const [showReview, setShowReview] = useState(false);
@@ -19,22 +13,26 @@ const SessionCard = ({ session, currentUser, onAction }) => {
   const isStudent = session.student._id === currentUser.id;
   const getStatusColor = (status) => {
     const statusColorMap = {
-      pending: statusClasses.warningSecondary,
-      confirmed: statusClasses.successSecondary,
-      in_progress: statusClasses.infoSecondary,
+      pending:
+        "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600",
+      confirmed:
+        "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-400 dark:border-gray-500",
+      in_progress:
+        "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-gray-900 dark:border-gray-100",
       completed: cn(
-        themeClasses.bgTertiary,
-        themeClasses.textMuted,
-        themeClasses.borderSecondary
+        "bg-gray-50 dark:bg-gray-900",
+        "text-gray-600 dark:text-gray-400",
+        "border-gray-200 dark:border-gray-800"
       ),
-      cancelled: statusClasses.errorSecondary,
+      cancelled:
+        "bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-400 dark:border-gray-500",
     };
     return (
       statusColorMap[status] ||
       cn(
-        themeClasses.bgTertiary,
-        themeClasses.textMuted,
-        themeClasses.borderSecondary
+        "bg-gray-50 dark:bg-gray-900",
+        "text-gray-600 dark:text-gray-400",
+        "border-gray-200 dark:border-gray-800"
       )
     );
   };
@@ -195,7 +193,10 @@ const SessionCard = ({ session, currentUser, onAction }) => {
           {session.status === "completed" &&
             (session.teacherNotes || session.studentNotes) && (
               <div
-                className={cn("rounded-lg p-3 mb-3", statusClasses.infoLight)}
+                className={cn(
+                  "rounded-lg p-3 mb-3",
+                  "bg-gray-100 dark:bg-gray-800"
+                )}
               >
                 {" "}
                 {session.teacherNotes && (
@@ -203,7 +204,7 @@ const SessionCard = ({ session, currentUser, onAction }) => {
                     <p
                       className={cn(
                         "text-xs font-medium mb-1",
-                        themeClasses.info
+                        "text-gray-700 dark:text-gray-300"
                       )}
                     >
                       Teacher Notes:
@@ -218,7 +219,7 @@ const SessionCard = ({ session, currentUser, onAction }) => {
                     <p
                       className={cn(
                         "text-xs font-medium mb-1",
-                        themeClasses.info
+                        "text-gray-700 dark:text-gray-300"
                       )}
                     >
                       Student Notes:
@@ -233,22 +234,30 @@ const SessionCard = ({ session, currentUser, onAction }) => {
           {/* Review */}
           {session.review?.rating && (
             <div
-              className={cn("rounded-lg p-3 mb-3", statusClasses.successLight)}
+              className={cn(
+                "rounded-lg p-3 mb-3",
+                "bg-gray-100 dark:bg-gray-800"
+              )}
             >
               <div className="flex items-center gap-2 mb-2">
                 <span
-                  className={cn("text-sm font-medium", themeClasses.success)}
+                  className={cn(
+                    "text-sm font-medium",
+                    "text-gray-700 dark:text-gray-300"
+                  )}
                 >
                   Review:
                 </span>
-                <div className="flex text-theme-warning">
+                <div className="flex text-gray-600 dark:text-gray-400">
                   {[...Array(5)].map((_, i) => (
                     <span key={i}>{i < session.review.rating ? "★" : "☆"}</span>
                   ))}
                 </div>
               </div>
               {session.review.feedback && (
-                <p className={cn("text-sm", themeClasses.success)}>
+                <p
+                  className={cn("text-sm", "text-gray-700 dark:text-gray-300")}
+                >
                   {session.review.feedback}
                 </p>
               )}
@@ -265,10 +274,10 @@ const SessionCard = ({ session, currentUser, onAction }) => {
               <button
                 onClick={() => handleAction("accept")}
                 disabled={loading}
-                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg hover:from-blue-600 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                className="px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 Accept
-              </button>{" "}
+              </button>
               <button
                 onClick={() => {
                   const reason = prompt("Reason for rejection (optional):");
@@ -277,7 +286,7 @@ const SessionCard = ({ session, currentUser, onAction }) => {
                   handleAction("reject", data);
                 }}
                 disabled={loading}
-                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg hover:from-amber-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                className="px-4 py-2 bg-gray-600 dark:bg-gray-400 text-white dark:text-gray-900 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 Reject
               </button>
@@ -289,10 +298,10 @@ const SessionCard = ({ session, currentUser, onAction }) => {
               <button
                 onClick={() => setShowReschedule(true)}
                 disabled={loading}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                className="px-4 py-2 bg-gray-700 dark:bg-gray-300 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 Reschedule
-              </button>{" "}
+              </button>
               <button
                 onClick={() => {
                   const reason = prompt("Reason for cancellation (optional):");
@@ -301,7 +310,7 @@ const SessionCard = ({ session, currentUser, onAction }) => {
                   handleAction("cancel", data);
                 }}
                 disabled={loading}
-                className="px-4 py-2 bg-gradient-to-r from-slate-500 to-gray-600 text-white rounded-lg hover:from-slate-600 hover:to-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                className="px-4 py-2 bg-gray-500 dark:bg-gray-600 text-white dark:text-gray-100 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 Cancel
               </button>
@@ -328,7 +337,7 @@ const SessionCard = ({ session, currentUser, onAction }) => {
                 handleAction("end", data);
               }}
               disabled={loading}
-              className="px-4 py-2 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-lg hover:from-purple-600 hover:to-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              className="px-4 py-2 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 rounded-lg hover:bg-gray-900 dark:hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
             >
               End Session
             </button>
@@ -338,7 +347,7 @@ const SessionCard = ({ session, currentUser, onAction }) => {
             <button
               onClick={() => handleAction("start")}
               disabled={loading}
-              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              className="px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
             >
               🚀 Start Session
             </button>
@@ -354,7 +363,7 @@ const SessionCard = ({ session, currentUser, onAction }) => {
                   "width=1200,height=800"
                 );
               }}
-              className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              className="px-4 py-2 bg-gray-700 dark:bg-gray-300 text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-400 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
             >
               🎥 Join Video Call
             </button>
@@ -363,7 +372,9 @@ const SessionCard = ({ session, currentUser, onAction }) => {
           {canReview() && (
             <button
               onClick={() => setShowReview(true)}
-              className={cn(buttonVariants.warning, "text-sm")}
+              className={cn(
+                "px-4 py-2 bg-gray-600 dark:bg-gray-400 text-white dark:text-gray-900 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-500 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              )}
             >
               Write Review
             </button>

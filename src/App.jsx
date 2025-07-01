@@ -24,7 +24,6 @@ import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
 import SessionsPage from "./pages/SessionsPage";
 import CreditsPage from "./pages/CreditsPage";
-import ReminderTestPage from "./pages/ReminderTestPage";
 import ThemeDemo from "./pages/ThemeDemo";
 
 import SessionDashboard from "./components/Sessions/SessionDashboard";
@@ -114,14 +113,6 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <CreditsPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/test/reminders"
-                    element={
-                      <ProtectedRoute>
-                        <ReminderTestPage />
                       </ProtectedRoute>
                     }
                   />

@@ -48,7 +48,7 @@ const SearchFilter = ({ onSearch, onFilterChange, loading }) => {
             className={cn(
               "absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5",
               themeClasses.textMuted,
-              "group-focus-within:text-accent-primary",
+              "group-focus-within:text-gray-700 dark:group-focus-within:text-gray-300",
               themeClasses.transitionColors
             )}
           />
@@ -83,7 +83,7 @@ const SearchFilter = ({ onSearch, onFilterChange, loading }) => {
             themeClasses.transition,
             showFilters
               ? cn(
-                  "bg-accent-light border-border-accent text-accent-primary",
+                  "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100",
                   themeClasses.hover
                 )
               : cn(
@@ -155,11 +155,11 @@ const SearchFilter = ({ onSearch, onFilterChange, loading }) => {
               onClick={clearFilters}
               className={cn(
                 "w-full px-4 py-3 rounded-lg font-medium",
-                themeClasses.errorLight,
-                themeClasses.error,
-                "border border-[var(--error)]",
+                "bg-gray-100 dark:bg-gray-800",
+                "text-gray-900 dark:text-gray-100",
+                "border border-gray-300 dark:border-gray-600",
                 themeClasses.transition,
-                "hover:bg-[var(--error)] hover:text-text-inverse"
+                "hover:bg-gray-200 dark:hover:bg-gray-700"
               )}
             >
               Clear All

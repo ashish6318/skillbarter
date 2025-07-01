@@ -131,10 +131,10 @@ const ChatWindow = ({
             )}
           </div>
           <div>
-            <h3 className="font-mono font-semibold text-dark-50">
+            <h3 className={cn("font-semibold", themeClasses.textPrimary)}>
               {getFullName(selectedUser.firstName, selectedUser.lastName)}
-            </h3>{" "}
-            <p className="text-dark-400 font-mono text-sm">
+            </h3>
+            <p className={cn("text-sm", themeClasses.textSecondary)}>
               {selectedUser.country && `${selectedUser.country} • `}
               {onlineUsers && onlineUsers.has(selectedUser._id)
                 ? "Online"
@@ -153,18 +153,24 @@ const ChatWindow = ({
               .map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div
-                    className={`flex ${
+                    className={cn(
+                      "animate-pulse flex",
                       i % 2 === 0 ? "justify-start" : "justify-end"
-                    }`}
+                    )}
                   >
-                    <div className="bg-dark-700 rounded-lg h-12 w-48"></div>
+                    <div
+                      className={cn(
+                        "rounded-lg h-12 w-48",
+                        themeClasses.bgTertiary
+                      )}
+                    ></div>
                   </div>
                 </div>
               ))}
           </div>
         ) : messages.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-dark-400 font-mono text-sm">
+            <p className={cn("text-sm", themeClasses.textMuted)}>
               No messages yet. Start the conversation!
             </p>
           </div>
@@ -186,15 +192,32 @@ const ChatWindow = ({
                   className={cn(
                     "max-w-xs lg:max-w-md px-4 py-2 rounded-lg",
                     isCurrentUser
-                      ? cn("bg-accent-primary", themeClasses.textInverse)
-                      : cn(themeClasses.bgSecondary, themeClasses.textPrimary)
+                      ? cn(
+                          "bg-black text-white",
+                          "dark:bg-white dark:text-black",
+                          "shadow-lg border border-gray-800 dark:border-gray-300"
+                        )
+                      : cn(
+                          themeClasses.bgSecondary,
+                          themeClasses.textPrimary,
+                          "border border-gray-200 dark:border-gray-700"
+                        )
                   )}
                 >
-                  <p className="font-mono text-sm">{message.content}</p>{" "}
                   <p
                     className={cn(
-                      "font-mono text-xs mt-1",
-                      isCurrentUser ? "opacity-80" : themeClasses.textMuted
+                      "text-sm font-medium",
+                      isCurrentUser ? "text-white dark:text-black" : ""
+                    )}
+                  >
+                    {message.content}
+                  </p>
+                  <p
+                    className={cn(
+                      "text-xs mt-1",
+                      isCurrentUser
+                        ? "text-gray-300 dark:text-gray-600"
+                        : themeClasses.textMuted
                     )}
                   >
                     {formatTime(message.createdAt)}
@@ -208,7 +231,13 @@ const ChatWindow = ({
       </div>
 
       {/* Message Input */}
-      <div className="bg-card border-t border-dark-600 p-4">
+      <div
+        className={cn(
+          "border-t p-4",
+          themeClasses.bgSecondary,
+          themeClasses.borderSecondary
+        )}
+      >
         <form onSubmit={handleSubmit} className="flex gap-3">
           {" "}
           <input

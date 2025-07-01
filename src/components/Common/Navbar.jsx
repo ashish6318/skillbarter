@@ -77,18 +77,18 @@ const Navbar = () => {
       {" "}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and brand - More space and better alignment */}
-          <div className="flex items-center min-w-0 flex-1 lg:flex-none">
+          {/* Logo and brand - Optimized for space */}
+          <div className="flex items-center min-w-0 flex-shrink-0">
             <Link
               to="/"
-              className="flex items-center space-x-4 group"
+              className="flex items-center space-x-2 group"
               aria-label="SkillBarter home"
             >
               <div
                 className={cn(
                   "w-10 h-10 rounded-xl flex items-center justify-center",
-                  "bg-gradient-to-br from-accent-primary to-accent-hover",
-                  themeClasses.shadowMd,
+                  "bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-200 dark:to-gray-100",
+                  "shadow-md",
                   "transition-all duration-200",
                   "active:scale-95 active:shadow-sm"
                 )}
@@ -96,7 +96,7 @@ const Navbar = () => {
                 <span
                   className={cn(
                     "font-mono font-bold text-base",
-                    themeClasses.textInverse
+                    "text-white dark:text-gray-900"
                   )}
                 >
                   SB
@@ -105,15 +105,16 @@ const Navbar = () => {
               <div className="flex flex-col justify-center">
                 <span
                   className={cn(
-                    "text-xl font-mono font-bold leading-tight",
+                    "text-lg sm:text-xl font-mono font-bold leading-tight",
                     themeClasses.textPrimary
                   )}
                 >
-                  SkillBarter
+                  <span className="hidden sm:inline">SkillBarter</span>
+                  <span className="sm:hidden">SB</span>
                 </span>
                 <span
                   className={cn(
-                    "text-xs font-mono leading-none",
+                    "hidden md:block text-xs font-mono leading-none",
                     themeClasses.textMuted
                   )}
                 >
@@ -122,10 +123,10 @@ const Navbar = () => {
               </div>
             </Link>
           </div>{" "}
-          {/* Desktop Navigation - Centered with better spacing */}
+          {/* Desktop Navigation - Centered with compact spacing */}
           {isAuthenticated && (
-            <div className="hidden lg:flex items-center justify-center flex-1 px-8">
-              <div className="flex items-center space-x-2">
+            <div className="hidden lg:flex items-center justify-center flex-1 px-4">
+              <div className="flex items-center space-x-1">
                 {navigationItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = isActiveRoute(item.href);
@@ -134,13 +135,13 @@ const Navbar = () => {
                       key={item.name}
                       to={item.href}
                       className={cn(
-                        "relative flex items-center px-4 py-2 rounded-xl text-sm font-mono font-medium",
+                        "relative flex items-center px-3 py-2 rounded-xl text-sm font-medium",
                         "transition-all duration-200",
                         isActive
                           ? cn(
-                              themeClasses.gradientAccent,
-                              themeClasses.textInverse,
-                              themeClasses.shadowMd
+                              "bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-200 dark:to-gray-100",
+                              "text-white dark:text-gray-900",
+                              "shadow-md"
                             )
                           : cn(
                               themeClasses.textSecondary,
@@ -151,8 +152,8 @@ const Navbar = () => {
                       )}
                       aria-current={isActive ? "page" : undefined}
                     >
-                      <Icon className="w-4 h-4 mr-2" />
-                      {item.name}
+                      <Icon className="w-4 h-4 mr-1.5" />
+                      <span className="hidden xl:inline">{item.name}</span>
                       {isActive && (
                         <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-current rounded-full" />
                       )}
@@ -175,10 +176,8 @@ const Navbar = () => {
                 <div
                   className={cn(
                     "w-2 h-2 rounded-full",
-                    isConnected
-                      ? "bg-theme-success animate-pulse"
-                      : "bg-theme-error",
-                    isConnected ? themeClasses.shadowSm : ""
+                    isConnected ? "bg-green-500 animate-pulse" : "bg-red-500",
+                    isConnected ? "shadow-sm" : ""
                   )}
                   title={isConnected ? "Connected" : "Disconnected"}
                   aria-label={
@@ -198,18 +197,21 @@ const Navbar = () => {
               </div>
             )}
             {isAuthenticated ? (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 min-w-0 flex-shrink-0">
                 {/* Credits display */}
                 <div
                   className={cn(
                     "hidden sm:flex items-center space-x-2 px-4 py-2 rounded-xl border transition-all duration-200",
                     themeClasses.bgSecondary,
                     themeClasses.borderPrimary,
-                    "hover:shadow-[var(--shadow-md)] hover:border-border-accent"
+                    "hover:shadow-md hover:border-gray-400 dark:hover:border-gray-500"
                   )}
                 >
                   <CreditCardIcon
-                    className={cn("w-4 h-4", themeClasses.textAccent)}
+                    className={cn(
+                      "w-4 h-4",
+                      "text-gray-700 dark:text-gray-300"
+                    )}
                   />
                   <span
                     className={cn(
@@ -236,10 +238,11 @@ const Navbar = () => {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     className={cn(
-                      "flex items-center space-x-3 p-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2",
+                      "flex items-center space-x-3 p-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 min-w-0",
                       themeClasses.hover,
-                      "focus:ring-accent-primary/30 hover:scale-105",
-                      isProfileDropdownOpen && "bg-bg-hover scale-105"
+                      "focus:ring-gray-400/30 hover:scale-105 max-w-[200px]",
+                      isProfileDropdownOpen &&
+                        "bg-gray-100 dark:bg-gray-800 scale-105"
                     )}
                     onClick={() =>
                       setIsProfileDropdownOpen(!isProfileDropdownOpen)
@@ -254,8 +257,8 @@ const Navbar = () => {
                         <img
                           className={cn(
                             "w-8 h-8 rounded-full object-cover ring-2 transition-all duration-200",
-                            themeClasses.borderAccent,
-                            "hover:ring-4 hover:ring-accent-primary/20"
+                            "ring-gray-300 dark:ring-gray-600",
+                            "hover:ring-4 hover:ring-gray-400/50 dark:hover:ring-gray-500/50"
                           )}
                           src={user.profilePicture}
                           alt={`${user.firstName} ${user.lastName}`}
@@ -263,8 +266,8 @@ const Navbar = () => {
                         <div
                           className={cn(
                             "absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2",
-                            isConnected ? "bg-theme-success" : "bg-theme-error",
-                            themeClasses.borderPrimary
+                            isConnected ? "bg-green-500" : "bg-red-500",
+                            "border-white dark:border-gray-900"
                           )}
                         />
                       </div>
@@ -273,22 +276,30 @@ const Navbar = () => {
                         className={cn("w-8 h-8", themeClasses.textMuted)}
                       />
                     )}{" "}
-                    <div className="hidden sm:block text-left">
+                    <div className="hidden sm:block text-left min-w-0 max-w-[150px]">
                       <span
                         className={cn(
-                          "block text-sm font-mono font-medium",
+                          "block text-sm font-medium truncate",
                           themeClasses.textPrimary
                         )}
+                        title={
+                          `${user?.firstName || ""} ${
+                            user?.lastName || ""
+                          }`.trim() || "User"
+                        }
                       >
-                        Ashish Rajput
+                        {`${user?.firstName || ""} ${
+                          user?.lastName || ""
+                        }`.trim() || "User"}
                       </span>
                       <span
                         className={cn(
-                          "text-xs font-mono",
+                          "text-xs truncate block",
                           themeClasses.textMuted
                         )}
+                        title={user?.email || ""}
                       >
-                        @ashish
+                        {user?.email || "@user"}
                       </span>
                     </div>
                     <ChevronDownIcon
@@ -299,74 +310,78 @@ const Navbar = () => {
                       )}
                     />
                   </button>
-
                   {/* Dropdown menu */}
-                  <div
-                    className={cn(
-                      "absolute right-0 mt-2 w-56 rounded-2xl border opacity-0 invisible transition-all duration-200 z-50",
-                      componentPatterns.dropdown,
-                      "bg-bg-primary/95 backdrop-blur-lg",
-                      isProfileDropdownOpen &&
-                        "opacity-100 visible transform scale-100",
-                      !isProfileDropdownOpen && "scale-95"
-                    )}
-                    role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="user-menu"
-                  >
-                    <div className="py-2">
-                      {" "}
-                      <div
-                        className={cn(
-                          "px-4 py-3 border-b",
-                          themeClasses.borderSecondary
-                        )}
-                      >
-                        <p
+                  {isProfileDropdownOpen && (
+                    <div
+                      className={cn(
+                        "absolute right-0 mt-2 w-56 rounded-2xl border shadow-xl transition-all duration-200 z-50",
+                        "bg-white dark:bg-gray-900",
+                        "border-gray-200 dark:border-gray-700"
+                      )}
+                      role="menu"
+                      aria-orientation="vertical"
+                      aria-labelledby="user-menu"
+                    >
+                      <div className="py-2">
+                        <div
                           className={cn(
-                            "text-sm font-mono font-medium",
-                            themeClasses.textPrimary
+                            "px-4 py-3 border-b",
+                            "border-gray-200 dark:border-gray-700"
                           )}
                         >
-                          Ashish Rajput
-                        </p>
-                        <p
+                          <p
+                            className={cn(
+                              "text-sm font-medium truncate",
+                              themeClasses.textPrimary
+                            )}
+                            title={
+                              `${user?.firstName || ""} ${
+                                user?.lastName || ""
+                              }`.trim() || "User"
+                            }
+                          >
+                            {`${user?.firstName || ""} ${
+                              user?.lastName || ""
+                            }`.trim() || "User"}
+                          </p>
+                          <p
+                            className={cn(
+                              "text-xs truncate",
+                              themeClasses.textMuted
+                            )}
+                            title={user?.email || ""}
+                          >
+                            {user?.email || "@user"}
+                          </p>
+                        </div>
+                        <Link
+                          to="/profile"
                           className={cn(
-                            "text-xs font-mono",
-                            themeClasses.textMuted
+                            "flex items-center px-4 py-3 text-sm transition-colors group",
+                            "text-gray-700 dark:text-gray-300",
+                            "hover:bg-gray-100 dark:hover:bg-gray-800"
                           )}
+                          role="menuitem"
+                          onClick={() => setIsProfileDropdownOpen(false)}
                         >
-                          @ashish
-                        </p>
+                          <UserCircleIcon className="w-4 h-4 mr-3 group-hover:scale-110 transition-transform" />
+                          Profile Settings
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className={cn(
+                            "flex items-center w-full px-4 py-3 text-sm transition-colors group",
+                            "text-gray-700 dark:text-gray-300",
+                            "hover:bg-gray-100 dark:hover:bg-gray-800"
+                          )}
+                          role="menuitem"
+                        >
+                          <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3 group-hover:scale-110 transition-transform" />
+                          Sign out
+                        </button>
                       </div>
-                      <Link
-                        to="/profile"
-                        className={cn(
-                          "flex items-center px-4 py-3 text-sm font-mono transition-colors group",
-                          themeClasses.textSecondary,
-                          themeClasses.hover,
-                          "hover:text-text-primary"
-                        )}
-                        role="menuitem"
-                        onClick={() => setIsProfileDropdownOpen(false)}
-                      >
-                        <UserCircleIcon className="w-4 h-4 mr-3 group-hover:scale-110 transition-transform" />
-                        Profile Settings
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className={cn(
-                          "flex items-center w-full px-4 py-3 text-sm font-mono transition-colors group",
-                          themeClasses.textSecondary,
-                          "hover:bg-theme-error/10 hover:text-theme-error"
-                        )}
-                        role="menuitem"
-                      >
-                        <ArrowRightOnRectangleIcon className="w-4 h-4 mr-3 group-hover:scale-110 transition-transform" />
-                        Sign out
-                      </button>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -388,11 +403,11 @@ const Navbar = () => {
                   to="/register"
                   className={cn(
                     "px-6 py-2 rounded-xl text-sm font-mono font-medium transition-all duration-200 transform hover:scale-105",
-                    themeClasses.gradientAccent,
-                    themeClasses.gradientHover,
-                    themeClasses.textInverse,
-                    themeClasses.shadowMd,
-                    "hover:shadow-[var(--shadow-lg)]"
+                    "bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-200 dark:to-gray-100",
+                    "hover:from-gray-700 hover:to-gray-800 dark:hover:from-gray-100 dark:hover:to-gray-200",
+                    "text-white dark:text-gray-900",
+                    "shadow-md",
+                    "hover:shadow-lg"
                   )}
                 >
                   Sign up
@@ -433,9 +448,9 @@ const Navbar = () => {
             <div
               className={cn(
                 "mx-4 mt-2 rounded-2xl border backdrop-blur-lg",
-                themeClasses.borderSecondary,
-                "bg-bg-primary/95",
-                themeClasses.shadowLg
+                "border-gray-200 dark:border-gray-700",
+                "bg-white/95 dark:bg-gray-900/95",
+                "shadow-lg"
               )}
             >
               <div className="px-4 py-6 space-y-2">
@@ -450,8 +465,8 @@ const Navbar = () => {
                         "flex items-center px-4 py-3 rounded-xl text-base font-mono font-medium transition-all duration-200 group",
                         isActive
                           ? cn(
-                              themeClasses.gradientAccent,
-                              themeClasses.textInverse,
+                              "bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-200 dark:to-gray-100",
+                              "text-white dark:text-gray-900",
                               "scale-105"
                             )
                           : cn(
@@ -485,7 +500,10 @@ const Navbar = () => {
                 >
                   <div className="flex items-center">
                     <CreditCardIcon
-                      className={cn("w-5 h-5 mr-3", themeClasses.textAccent)}
+                      className={cn(
+                        "w-5 h-5 mr-3",
+                        "text-gray-700 dark:text-gray-300"
+                      )}
                     />
                     <span
                       className={cn(
@@ -528,22 +546,30 @@ const Navbar = () => {
                         className={cn("w-10 h-10", themeClasses.textMuted)}
                       />
                     )}
-                    <div className="ml-3 flex-1">
+                    <div className="ml-3 flex-1 min-w-0">
                       <p
                         className={cn(
-                          "text-sm font-mono font-medium",
+                          "text-sm font-medium truncate",
                           themeClasses.textPrimary
                         )}
+                        title={
+                          `${user?.firstName || ""} ${
+                            user?.lastName || ""
+                          }`.trim() || "User"
+                        }
                       >
-                        {user?.firstName} {user?.lastName}
+                        {`${user?.firstName || ""} ${
+                          user?.lastName || ""
+                        }`.trim() || "User"}
                       </p>
                       <p
                         className={cn(
-                          "text-xs font-mono",
+                          "text-xs truncate",
                           themeClasses.textMuted
                         )}
+                        title={user?.email || ""}
                       >
-                        {user?.email}
+                        {user?.email || "@user"}
                       </p>
                     </div>
                   </div>

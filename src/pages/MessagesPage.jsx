@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import { useSocket } from "../context/SocketContext";
 import { messagesAPI } from "../utils/api";
 import ConversationsList from "../components/Messages/ConversationsList";
@@ -7,6 +8,30 @@ import ChatWindow from "../components/Messages/ChatWindow";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
 import toast from "react-hot-toast";
 import { themeClasses, cn } from "../utils/theme";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+    },
+  },
+};
+
+const slideInVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
 
 const MessagesPage = () => {
   const location = useLocation();
@@ -272,41 +297,58 @@ const MessagesPage = () => {
   }, [leaveConversation]); // Only depend on leaveConversation
   if (loading) {
     return (
-      <div
+      <motion.div
         className={cn(
           "min-h-screen flex items-center justify-center",
           themeClasses.bgPrimary
         )}
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
       >
         <LoadingSpinner />
-      </div>
+      </motion.div>
     );
   }
   return (
-    <div className={cn("min-h-screen flex", themeClasses.bgPrimary)}>
+    <motion.div
+      className={cn("min-h-screen flex", themeClasses.bgPrimary)}
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* Conversations List */}
-      <ConversationsList
-        conversations={conversations}
-        selectedUserId={selectedUser?._id}
-        onSelectUser={handleSelectUser}
-        loading={loading}
-        onlineUsers={onlineUsers}
-      />
+      <motion.div variants={slideInVariants}>
+        <ConversationsList
+          conversations={conversations}
+          selectedUserId={selectedUser?._id}
+          onSelectUser={handleSelectUser}
+          loading={loading}
+          onlineUsers={onlineUsers}
+        />
+      </motion.div>
       {/* Chat Window */}
-      <ChatWindow
-        selectedUser={selectedUser}
-        messages={messages}
-        onSendMessage={handleSendMessage}
-        loading={messagesLoading}
-        onlineUsers={onlineUsers}
-      />
+      <motion.div className="flex-1" variants={slideInVariants}>
+        <ChatWindow
+          selectedUser={selectedUser}
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          loading={messagesLoading}
+          onlineUsers={onlineUsers}
+        />
+      </motion.div>
       {/* Connection Status */}
       {!isConnected && (
-        <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg font-mono text-sm">
+        <motion.div
+          className="fixed top-4 right-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-mono text-sm border border-gray-700 dark:border-gray-300"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+        >
           Disconnected - Trying to reconnect...
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import ProfileHeader from "../components/Profile/ProfileHeader";
 import SkillsSection from "../components/Profile/SkillsSection";
@@ -107,7 +108,12 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className={cn("min-h-screen", themeClasses.bgPrimary)}>
+    <motion.div
+      className={cn("min-h-screen", themeClasses.bgPrimary)}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Header */}
         <ProfileHeader
@@ -145,7 +151,7 @@ const ProfilePage = () => {
         onClose={() => setIsAddSkillModalOpen(false)}
         onSave={handleSaveSkill}
       />
-    </div>
+    </motion.div>
   );
 };
 

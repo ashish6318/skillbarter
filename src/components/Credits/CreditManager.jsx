@@ -40,29 +40,7 @@ const CreditManager = () => {
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, []); // Debug function to test API calls
-  const testAPI = async () => {
-    try {
-      console.log("Testing API calls...");
-
-      // Test balance endpoint
-      const balanceTest = await creditsAPI.getBalance();
-      console.log("Balance API response:", balanceTest);
-
-      // Test transactions endpoint
-      const transactionsTest = await creditsAPI.getTransactions();
-      console.log("Transactions API response:", transactionsTest);
-
-      // Test stats endpoint
-      const statsTest = await creditsAPI.getStats();
-      console.log("Stats API response:", statsTest);
-
-      toast.success("API test completed - check console for details");
-    } catch (error) {
-      console.error("API test failed:", error);
-      toast.error(`API test failed: ${error.message}`);
-    }
-  };
+  }, []);
 
   // Check for low credits warning
   useEffect(() => {
@@ -501,18 +479,9 @@ const CreditManager = () => {
                 <ArrowPathIcon className="w-4 h-4" />
                 <span>{loading ? "Refreshing..." : "Refresh"}</span>
               </button>
-              <button
-                onClick={testAPI}
-                className={cn(
-                  buttonVariants.secondary,
-                  "flex items-center space-x-2"
-                )}
-              >
-                <span>Test API</span>
-              </button>
             </div>
           </div>
-        </div>{" "}
+        </div>
         {/* Balance Card */}
         <div
           className={cn(

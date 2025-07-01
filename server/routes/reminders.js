@@ -47,25 +47,4 @@ router.post('/send/:sessionId', protect, async (req, res) => {
   }
 });
 
-// Test reminder system (development only)
-router.post('/test', protect, async (req, res) => {
-  if (process.env.NODE_ENV !== 'development') {
-    return res.status(403).json({ error: 'Test endpoint only available in development' });
-  }
-
-  try {
-    const reminderService = getReminderService(req);
-    if (!reminderService) {
-      return res.status(503).json({ error: 'Reminder service not available' });
-    }
-
-    // Force check reminders
-    await reminderService.checkAndSendReminders();
-    res.json({ success: true, message: 'Reminder check triggered successfully' });
-  } catch (error) {
-    console.error('Error testing reminders:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 module.exports = router;
