@@ -26,8 +26,11 @@ export const SocketProvider = ({ children }) => {
       if (!token) {
         console.log("No token found for socket connection");
         return;
-      } // Initialize socket connection - must connect to server root, not /api
-      const socketURL = "http://localhost:5000";
+      }
+
+      // Initialize socket connection - must connect to server root, not /api
+      const socketURL =
+        import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
       console.log("🔗 Connecting to socket at:", socketURL);
       console.log("🔑 Using token:", token ? "Token available" : "No token");
 

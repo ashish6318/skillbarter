@@ -1,0 +1,11 @@
+# Render Configuration
+# This file is optional - Render can auto-detect settings
+
+# Build Command
+npm install
+
+# Start Command  
+npm start
+
+# Environment
+node
