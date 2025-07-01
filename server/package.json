@@ -4,6 +4,7 @@
   "description": "Backend server for Skill Barter Platform - Peer-to-Peer Skill Exchange",
   "main": "index.js",
   "scripts": {
+    "build": "echo 'Build completed'",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "jest",
