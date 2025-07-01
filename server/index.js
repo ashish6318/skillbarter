@@ -94,6 +94,22 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Root endpoint for deployment verification
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Skill Barter API Server',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      discover: '/api/discover',
+      messages: '/api/messages',
+      sessions: '/api/sessions'
+    }
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/discover', discoverRoutes);
@@ -111,7 +127,7 @@ app.use('/api/*', (req, res) => {
 });
 
 // Global error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('Global error:', err);
   
   res.status(err.status || 500).json({
@@ -142,7 +158,7 @@ io.use(async (socket, next) => {
     socket.userId = user._id.toString();
     socket.user = user;
     next();
-  } catch (error) {
+  } catch {
     next(new Error('Authentication failed'));
   }
 });
