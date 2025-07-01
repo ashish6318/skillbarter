@@ -50,7 +50,26 @@ const register = async (req, res) => {
     
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json(formatError('Server error during registration'));
+    
+    // Handle specific MongoDB errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue)[0];
+      return res.status(400).json(formatError(`${field} already exists`, 400));
+    }
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json(formatError(`Validation error: ${validationErrors.join(', ')}`, 400));
+    }
+    
+    // Handle MongoDB connection errors
+    if (error.name === 'MongooseError' || error.name === 'MongoError') {
+      console.error('Database connection error:', error);
+      return res.status(503).json(formatError('Database connection failed. Please try again later.', 503));
+    }
+    
+    res.status(500).json(formatError('Server error during registration. Please try again later.', 500));
   }
 };
 
